@@ -11,12 +11,23 @@ concurrency:
   group: deals
   cancel-in-progress: false
 
+permissions:
+  actions: write   # lets the keepalive step reset the 60-day auto-disable timer
+
 jobs:
   run:
     runs-on: ubuntu-latest
     timeout-minutes: 15
     steps:
       - uses: actions/checkout@v4
+
+      # Scheduled workflows are auto-disabled after 60 days without repo
+      # activity; re-enabling via the API resets that countdown.
+      - name: Keepalive
+        run: gh api -X PUT "repos/${{ github.repository }}/actions/workflows/deals.yml/enable"
+        env:
+          GH_TOKEN: ${{ github.token }}
+        continue-on-error: true
 
       - uses: actions/setup-python@v5
         with:
@@ -28,8 +39,10 @@ jobs:
           python -m pip install --upgrade pip
           pip install -r requirements.txt
 
-      - name: Install Playwright Chromium
-        run: python -m playwright install --with-deps chromium
+      # Chromium is only needed if ENABLE_BROWSER_CONFIRM / ENABLE_CHECKOUT_SIM
+      # are turned on (both default false) — skip the ~90s install until then.
+      # - name: Install Playwright Chromium
+      #   run: python -m playwright install --with-deps chromium
 
       - name: Run pipeline
         env:
