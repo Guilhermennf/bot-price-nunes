@@ -100,3 +100,10 @@ def record_posted_deal(
             "score": score,
         }
     ).execute()
+
+
+def record_run(started_at: str, counters: dict, sources: dict) -> None:
+    """Persist one pipeline-run summary row (dashboard health view)."""
+    get_client().table("runs").insert(
+        {"started_at": started_at, "sources": sources, **counters}
+    ).execute()

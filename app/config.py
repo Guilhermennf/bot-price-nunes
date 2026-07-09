@@ -36,6 +36,15 @@ class Settings(BaseSettings):
     # Tried in order when the primary model is overloaded (503) / rate-limited.
     gemini_fallback_model: str = "gemini-flash-lite-latest"
 
+    # Curation
+    tech_only: bool = True
+    # CSV of canonical store ids (see app/stores.py). Empty = allow all.
+    allowed_stores: str = "amazon,mercadolivre,aliexpress,shopee,magalu"
+
+    # Affiliate (all dormant until the env var is filled)
+    amazon_assoc_tag: str = ""
+    ml_affiliate_tool_id: str = ""
+
     # Feature flags / tuning
     enable_checkout_sim: bool = False
     # Direct price-confirm via a real browser (Playwright). Off by default:
@@ -54,6 +63,9 @@ class Settings(BaseSettings):
         "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 "
         "(KHTML, like Gecko) Chrome/125.0.0.0 Safari/537.36"
     )
+
+    def allowed_stores_set(self) -> set[str]:
+        return {s.strip().lower() for s in self.allowed_stores.split(",") if s.strip()}
 
 
 @lru_cache

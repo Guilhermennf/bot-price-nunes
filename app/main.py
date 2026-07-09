@@ -14,6 +14,7 @@ import logging
 import random
 import sys
 import time
+from datetime import datetime, timezone
 from urllib.parse import urlsplit
 
 # Windows consoles default to cp1252, which chokes on emoji in deal copy.
@@ -21,6 +22,7 @@ if sys.stdout and hasattr(sys.stdout, "reconfigure"):
     sys.stdout.reconfigure(encoding="utf-8", errors="replace")
     sys.stderr.reconfigure(encoding="utf-8", errors="replace")
 
+from app import affiliate, filters
 from app.ai import gemini
 from app.config import get_settings
 from app.models import Deal
@@ -75,6 +77,16 @@ def mark_posted(deal: Deal) -> None:
         log.warning("record_posted_deal failed: %s", exc)
 
 
+def record_run_stats(started_at: str, counters: dict, sources: dict) -> None:
+    db = _db()
+    if not db:
+        return
+    try:
+        db.record_run(started_at, counters, sources)
+    except Exception as exc:
+        log.warning("record_run failed: %s", exc)
+
+
 # ------------------------------- stages --------------------------------------
 
 def gather() -> list[Deal]:
@@ -112,11 +124,36 @@ def _priority(deal: Deal) -> float:
 
 def run(dry_run: bool = False) -> None:
     s = get_settings()
-    candidates = gather()
+    started_at = datetime.now(timezone.utc).isoformat()
+
+    all_deals = gather()
+    sources_mix: dict[str, int] = {}
+    for d in all_deals:
+        sources_mix[d.source] = sources_mix.get(d.source, 0) + 1
+
+    counters = {
+        "gathered": len(all_deals), "posted": 0, "skipped_store": 0,
+        "skipped_tech": 0, "skipped_validation": 0, "skipped_ai": 0,
+        "skipped_dupe": 0, "skipped_resolve": 0,
+    }
+
+    # Curation gates (store whitelist + tech keywords) before anything costly.
+    candidates: list[Deal] = []
+    for deal in all_deals:
+        ok, why = filters.passes(deal)
+        if ok:
+            candidates.append(deal)
+        elif why.startswith("store"):
+            counters["skipped_store"] += 1
+        else:
+            counters["skipped_tech"] += 1
+    log.info("curation: %d/%d candidates (store -%d, tech -%d)",
+             len(candidates), len(all_deals),
+             counters["skipped_store"], counters["skipped_tech"])
+
     candidates.sort(key=_priority, reverse=True)
     candidates = candidates[: s.max_deals_per_run]
 
-    posted = 0
     for deal in candidates:
         confirm_price(deal)
 
@@ -125,36 +162,52 @@ def run(dry_run: bool = False) -> None:
         verdict = validate(deal)
         record_price(deal)  # build the series (happens even in dry-run)
         if not verdict.is_real_drop:
+            counters["skipped_validation"] += 1
             log.info("skip (validation): %s — %s", deal.title, verdict.reason)
             continue
 
         if not checkout_sim.verify_coupon(deal):
+            counters["skipped_validation"] += 1
             log.info("skip (coupon invalid): %s", deal.title)
             continue
 
         evaluation = gemini.evaluate(deal)
         if evaluation is None:
+            counters["skipped_ai"] += 1
             log.info("skip (no AI eval): %s", deal.title)
             continue
         deal.score = evaluation.score
         deal.copy = evaluation.copy
         deal.reason = evaluation.reason
+        if s.tech_only and not evaluation.is_tech:
+            counters["skipped_tech"] += 1
+            log.info("skip (not tech, AI: %s): %s", evaluation.category, deal.title)
+            continue
         if not evaluation.legit or evaluation.score < s.min_score:
+            counters["skipped_ai"] += 1
             log.info("skip (score %s): %s — %s", evaluation.score, deal.title,
                      evaluation.reason)
             continue
 
         if already_posted(deal):
+            counters["skipped_dupe"] += 1
             log.info("skip (already posted): %s", deal.title)
             continue
 
         # Promobit's feed only links to their own offer page; swap in the
-        # direct store URL right before posting (2 requests, posted deals only).
+        # validated direct store URL. No valid store URL = don't post at all
+        # (a Promobit or "bad merchant" link is worse than no post).
         # The dedupe key was computed from the original URL and is unaffected.
         if deal.source == "promobit":
             direct = promobit.resolve_store_url(deal)
-            if direct:
-                deal.url = direct
+            if not direct:
+                counters["skipped_resolve"] += 1
+                log.info("skip (no direct store link): %s", deal.title)
+                continue
+            deal.url = direct
+
+        # Attach affiliate identity (no-op until env vars are configured).
+        deal.url = affiliate.apply(deal.url, deal.store)
 
         if dry_run:
             print(_preview(deal))
@@ -162,12 +215,15 @@ def run(dry_run: bool = False) -> None:
             from app.notify.telegram import send_deal
             send_deal(deal)
             mark_posted(deal)
-        posted += 1
+        counters["posted"] += 1
 
         time.sleep(random.uniform(0.5, 1.5))  # be polite between deals
 
     verb = "would post" if dry_run else "posted"
-    log.info("done. %s %d deals", verb, posted)
+    log.info("done. %s %d deals | %s", verb, counters["posted"],
+             {k: v for k, v in counters.items() if k != "posted"})
+    if not dry_run:
+        record_run_stats(started_at, counters, sources_mix)
 
 
 def _preview(deal: Deal) -> str:

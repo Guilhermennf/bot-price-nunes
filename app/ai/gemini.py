@@ -34,6 +34,11 @@ Cupom: {coupon}
 Responda em JSON com:
 - legit (bool): o desconto é real e vale a pena?
 - score (0-100): quão boa é a oferta
+- is_tech (bool): é produto de tecnologia? (eletrônicos, informática, games,
+  periféricos, celulares, áudio/vídeo, casa inteligente). Roupas, cosméticos,
+  alimentos, móveis comuns etc. = false
+- category (string): categoria curta do produto (ex: "smartphone", "periférico",
+  "TV", "console", "não-tech")
 - reason (string, curto): justificativa objetiva
 - copy (string): texto persuasivo em PT-BR para o canal, com emojis, 1-3 linhas,
   destacando o desconto e o cupom se houver. NÃO invente preços nem repita o link.
@@ -46,6 +51,8 @@ class Evaluation:
     score: int
     reason: str
     copy: str
+    is_tech: bool = True
+    category: str = ""
 
 
 def _fmt(v) -> str:
@@ -122,4 +129,6 @@ def evaluate(deal: Deal) -> Evaluation | None:
         score=int(data.get("score", 0)),
         reason=str(data.get("reason", "")),
         copy=str(data.get("copy", "")),
+        is_tech=bool(data.get("is_tech", True)),
+        category=str(data.get("category", "")),
     )

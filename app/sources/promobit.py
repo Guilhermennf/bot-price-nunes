@@ -17,6 +17,7 @@ import re
 
 from app.models import Deal, normalize_url
 from app.sources.base import Source, get, iter_dicts, parse_next_data
+from app.stores import is_dead_redirect, store_from_url
 
 log = logging.getLogger(__name__)
 
@@ -89,31 +90,40 @@ class Promobit:
 
 
 def resolve_store_url(deal: Deal) -> str | None:
-    """Resolve a Promobit deal to the direct store URL.
+    """Resolve a Promobit deal to a validated direct store URL.
 
     The feed payload has no outbound link, but `/Redirect/to/<offerId>/` embeds
-    the affiliate link (linksynergy/awin/...), which 30x-chains to the store.
-    Two requests per deal — call only for deals about to be posted.
-    Returns a normalized direct URL, or None (keep the Promobit page then).
+    the affiliate link(s) (linksynergy/awin/...), which 30x-chain to the store.
+    Tries every candidate link on the page and only accepts a final URL whose
+    host is a known store (app/stores.py) — dead affiliate links ("bad
+    merchant" error pages) and chains that bounce back to Promobit return None.
+    Call only for deals about to be posted (a few requests each).
     """
     if not deal.raw_id or not deal.raw_id.isdigit():
         return None
     try:
         page = get(f"{BASE}/Redirect/to/{deal.raw_id}/")
         page.raise_for_status()
-        ext = [u for u in _URL_RE.findall(page.text)
-               if not any(b in u for b in _NOT_STORE)]
-        if not ext:
-            return None
-        final = get(ext[0])
-        url = normalize_url(str(final.url))
-        # Sanity: must have left the redirector ecosystem.
-        if any(b in url for b in _NOT_STORE):
-            return None
-        return url
     except Exception as exc:
         log.info("store-url resolve failed for %s: %s", deal.raw_id, exc)
         return None
+
+    candidates = [u for u in _URL_RE.findall(page.text)
+                  if not any(b in u for b in _NOT_STORE)]
+    for candidate in candidates[:4]:
+        try:
+            final = get(candidate)
+            url = normalize_url(str(final.url))
+        except Exception as exc:
+            log.debug("resolve hop failed (%s): %s", candidate[:60], exc)
+            continue
+        if is_dead_redirect(url):
+            continue
+        if store_from_url(url) is not None:
+            return url
+        log.debug("resolved to non-store host, rejecting: %s", url[:80])
+    log.info("no valid store URL for offer %s (%s)", deal.raw_id, deal.store)
+    return None
 
 
 _source: Source = Promobit()
