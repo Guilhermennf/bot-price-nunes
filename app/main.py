@@ -148,6 +148,14 @@ def run(dry_run: bool = False) -> None:
             log.info("skip (already posted): %s", deal.title)
             continue
 
+        # Promobit's feed only links to their own offer page; swap in the
+        # direct store URL right before posting (2 requests, posted deals only).
+        # The dedupe key was computed from the original URL and is unaffected.
+        if deal.source == "promobit":
+            direct = promobit.resolve_store_url(deal)
+            if direct:
+                deal.url = direct
+
         if dry_run:
             print(_preview(deal))
         else:

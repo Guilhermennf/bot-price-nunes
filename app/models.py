@@ -13,10 +13,11 @@ _TRACKING_PARAMS = {
     "gclid", "fbclid", "ref", "ref_", "refresh", "tag", "ascsubtag",
     "pd_rd_w", "pd_rd_r", "pd_rd_wg", "pf_rd_p", "pf_rd_r", "th", "psc",
     "forceInApp", "tracking_id", "wid", "sid", "c_id", "pdp_filters",
+    "af", "awc", "afsmartredirect", "ranmid", "ranealid", "ransiteid",
 }
-# Whole families of tracking params (Mercado Livre "matt_*", recommendation
-# "reco_*", etc.) — anything with these prefixes is stripped.
-_TRACKING_PREFIXES = ("matt_", "reco_", "utm_", "pf_rd_", "pd_rd_")
+# Whole families of tracking params (Mercado Livre "matt_*", affiliate
+# "aff_*"/"aw_*", etc.) — anything with these prefixes is stripped.
+_TRACKING_PREFIXES = ("matt_", "reco_", "utm_", "pf_rd_", "pd_rd_", "aff_", "aw_")
 
 
 def _is_tracking(key: str) -> bool:

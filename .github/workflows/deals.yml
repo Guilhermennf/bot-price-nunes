@@ -19,7 +19,7 @@ jobs:
     runs-on: ubuntu-latest
     timeout-minutes: 15
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@v6
 
       # Scheduled workflows are auto-disabled after 60 days without repo
       # activity; re-enabling via the API resets that countdown.
@@ -29,7 +29,7 @@ jobs:
           GH_TOKEN: ${{ github.token }}
         continue-on-error: true
 
-      - uses: actions/setup-python@v5
+      - uses: actions/setup-python@v6
         with:
           python-version: "3.12"
           cache: pip
