@@ -8,11 +8,24 @@ not the store's claimed list price).
 
 from __future__ import annotations
 
+import logging
 from dataclasses import dataclass
 
 from app.config import get_settings
 from app.db.supabase_client import PriceStats, get_price_stats
 from app.models import Deal
+
+log = logging.getLogger(__name__)
+
+
+def _safe_stats(product_key: str, window_days: int) -> PriceStats:
+    """Fetch history stats, degrading to 'no history' if the DB is unreachable
+    or unconfigured — a DB hiccup must not sink the whole run."""
+    try:
+        return get_price_stats(product_key, window_days)
+    except Exception as exc:
+        log.warning("price stats unavailable (%s); treating as no history", exc)
+        return PriceStats(count=0, minimum=None, median=None)
 
 
 @dataclass
@@ -31,7 +44,7 @@ def validate(deal: Deal) -> Verdict:
     if deal.price is None or deal.price <= 0:
         return Verdict(False, None, "no usable price")
 
-    stats: PriceStats = get_price_stats(deal.key, s.history_window_days)
+    stats: PriceStats = _safe_stats(deal.key, s.history_window_days)
     deal.hist_min = stats.minimum
     deal.hist_median = stats.median
 

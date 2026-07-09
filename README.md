@@ -76,11 +76,22 @@ Thresholds live in `.env` (see [`.env.example`](.env.example)):
 `MIN_SCORE`, `MIN_DISCOUNT_PCT`, `HISTORY_WINDOW_DAYS`, `REPOST_COOLDOWN_DAYS`,
 `MAX_DEALS_PER_RUN`, `ENABLE_CHECKOUT_SIM`.
 
-> **Note on scrapers:** aggregator parsers (`app/sources/promobit.py`,
-> `pelando.py`) read the sites' Next.js `__NEXT_DATA__` payload and guess deal
-> fields heuristically. If a site changes its internal schema, adjust the key
-> candidates at the top of each file — that's the only expected maintenance
-> point.
+### How each source works (verified against live sites)
+
+- **Promobit** — reads the homepage Next.js `__NEXT_DATA__` payload; deal fields
+  are `offerTitle` / `offerPrice` / `offerOldPrice` / `offerCoupon` / `offerSlug`.
+- **Pelando** — the site is client-rendered, so we call its internal REST feed
+  `api-web.pelando.com.br/feed/highlights` directly (needs only an anonymous
+  `x-sosho-unlogged-id` UUID header, no login).
+- **Direct confirm (ML/Amazon)** — best-effort only. Both stores wall datacenter
+  IPs (so it usually fails on GitHub Actions and we just trust the aggregator
+  price). A headless-browser fallback exists but is **off by default**
+  (`ENABLE_BROWSER_CONFIRM`) since the wall blocks it too.
+
+> **Maintenance point:** if a site changes its schema, update the field names at
+> the top of `app/sources/promobit.py` / `pelando.py`. That's the only expected
+> upkeep. Both parsers fail soft (log + return `[]`), so a break never crashes
+> the run.
 
 ## Not in v1
 

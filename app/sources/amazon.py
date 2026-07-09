@@ -11,6 +11,7 @@ import logging
 
 from selectolax.parser import HTMLParser
 
+from app.config import get_settings
 from app.sources.base import get, jsonld_price, parse_brl
 
 log = logging.getLogger(__name__)
@@ -47,11 +48,18 @@ def confirm_price(url: str) -> float | None:
         return None
 
     if "captcha" in resp.text.lower() or "api-services-support@amazon" in resp.text:
-        log.info("Amazon returned a bot page; trying Playwright")
-        return _confirm_with_playwright(url)
+        log.info("Amazon returned a bot page; trusting aggregator price")
+        return _maybe_browser(url)
 
     price = _from_html(resp.text)
-    return price if price is not None else _confirm_with_playwright(url)
+    return price if price is not None else _maybe_browser(url)
+
+
+def _maybe_browser(url: str) -> float | None:
+    """Playwright fallback, only when explicitly enabled (off in CI)."""
+    if not get_settings().enable_browser_confirm:
+        return None
+    return _confirm_with_playwright(url)
 
 
 def _confirm_with_playwright(url: str) -> float | None:

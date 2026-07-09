@@ -26,6 +26,10 @@ class Settings(BaseSettings):
 
     # Feature flags / tuning
     enable_checkout_sim: bool = False
+    # Direct price-confirm via a real browser (Playwright). Off by default:
+    # stores like Mercado Livre / Amazon wall datacenter IPs (GitHub Actions),
+    # so the httpx attempt usually fails and we just trust the aggregator price.
+    enable_browser_confirm: bool = False
     min_score: int = 70
     min_discount_pct: float = 10.0
     history_window_days: int = 90

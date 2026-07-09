@@ -12,8 +12,16 @@ _TRACKING_PARAMS = {
     "utm_source", "utm_medium", "utm_campaign", "utm_term", "utm_content",
     "gclid", "fbclid", "ref", "ref_", "refresh", "tag", "ascsubtag",
     "pd_rd_w", "pd_rd_r", "pd_rd_wg", "pf_rd_p", "pf_rd_r", "th", "psc",
-    "matt_tool", "forceInApp", "tracking_id", "wid", "sid", "c_id",
+    "forceInApp", "tracking_id", "wid", "sid", "c_id", "pdp_filters",
 }
+# Whole families of tracking params (Mercado Livre "matt_*", recommendation
+# "reco_*", etc.) — anything with these prefixes is stripped.
+_TRACKING_PREFIXES = ("matt_", "reco_", "utm_", "pf_rd_", "pd_rd_")
+
+
+def _is_tracking(key: str) -> bool:
+    lk = key.lower()
+    return lk in _TRACKING_PARAMS or lk.startswith(_TRACKING_PREFIXES)
 
 
 def normalize_url(url: str) -> str:
@@ -24,7 +32,7 @@ def normalize_url(url: str) -> str:
     parts = urlsplit(url.strip())
     kept = [
         (k, v) for k, v in parse_qsl(parts.query, keep_blank_values=False)
-        if k.lower() not in _TRACKING_PARAMS
+        if not _is_tracking(k)
     ]
     query = urlencode(sorted(kept))
     # Drop fragment, lowercase host, strip trailing slash on the path.

@@ -1,66 +1,79 @@
 """Pelando aggregator source.
 
-Same heuristic strategy as promobit.py: walk the Next.js payload for
-deal-shaped objects. Field-name candidates below are the tuning point if
-Pelando changes their internal schema.
+Pelando's site is client-rendered (Astro) — the deals come from its internal
+REST feed at api-web.pelando.com.br. That endpoint just needs an anonymous
+visitor id header (`x-sosho-unlogged-id`, any UUID) plus the site Origin/Referer;
+no login. So we call it directly with httpx — no browser needed.
+
+Verified live schema: title / price / discountPercentage / slug / sourceUrl /
+store{name} / kind. Coupon-only entries have price=null and are skipped.
 """
 
 from __future__ import annotations
 
 import logging
+import uuid
 
+import httpx
+
+from app.config import get_settings
 from app.models import Deal
-from app.sources.base import (
-    Source, first_key, get, iter_dicts, parse_brl, parse_next_data,
-)
+from app.sources.base import Source
 
 log = logging.getLogger(__name__)
 
-LISTING_URL = "https://www.pelando.com.br/quente"
+API_URL = "https://api-web.pelando.com.br/feed/highlights"
 BASE = "https://www.pelando.com.br"
+# One anonymous visitor id per process is plenty.
+_VISITOR_ID = str(uuid.uuid4())
 
 
-def _looks_like_deal(d: dict) -> bool:
-    has_title = any(k in d for k in ("title", "name"))
-    has_price = any(k in d for k in ("price", "newPrice", "currentPrice"))
-    has_link = any(k in d for k in ("url", "sourceUrl", "link", "slug"))
-    return has_title and has_price and has_link
+def _headers() -> dict:
+    s = get_settings()
+    return {
+        "User-Agent": s.user_agent,
+        "Accept": "application/json, text/plain, */*",
+        "Accept-Language": "pt-BR,pt;q=0.9",
+        "Origin": BASE,
+        "Referer": BASE + "/",
+        "x-sosho-unlogged-id": _VISITOR_ID,
+    }
 
 
 def _to_deal(d: dict) -> Deal | None:
-    title = first_key(d, "title", "name")
-    raw_price = first_key(d, "newPrice", "currentPrice", "price")
-    if not title or raw_price is None:
+    price = d.get("price")
+    title = d.get("title")
+    slug = d.get("slug")
+    if price is None or not title or not slug:
+        return None
+    try:
+        price = float(price)
+    except (TypeError, ValueError):
+        return None
+    if price < 1.0:  # sentinel / coupon-style entry
         return None
 
-    price = raw_price if isinstance(raw_price, (int, float)) else parse_brl(str(raw_price))
-    list_raw = first_key(d, "oldPrice", "originalPrice", "listPrice")
-    list_price = (
-        list_raw if isinstance(list_raw, (int, float)) else parse_brl(str(list_raw or ""))
-    )
+    disc = d.get("discountPercentage")
+    list_price = None
+    if isinstance(disc, (int, float)) and 0 < disc < 100:
+        list_price = round(price / (1 - disc / 100), 2)
 
-    link = first_key(d, "sourceUrl", "url", "link")
-    slug = first_key(d, "slug")
-    if not link and slug:
-        link = f"{BASE}/d/{slug}"
-    if not link:
-        return None
-    if link.startswith("/"):
-        link = BASE + link
+    store = d.get("store") or {}
+    store_name = store.get("name") if isinstance(store, dict) else ""
 
-    store = first_key(d, "store", "merchant", "retailer") or ""
-    if isinstance(store, dict):
-        store = first_key(store, "name", "title") or ""
+    # Prefer the outbound store link (lets us price-confirm on ML/Amazon);
+    # fall back to the Pelando deal page.
+    link = d.get("sourceUrl") or f"{BASE}/d/{slug}"
 
     return Deal(
         title=str(title).strip(),
-        store=str(store).strip(),
+        store=str(store_name or "").strip(),
         url=str(link),
         price=price,
         list_price=list_price,
-        coupon=first_key(d, "coupon", "couponCode", "code"),
+        coupon=d.get("code") or None,
         source="pelando",
-        raw_id=str(first_key(d, "id", "slug") or ""),
+        raw_id=str(d.get("id") or slug),
     )
 
 
@@ -68,23 +81,31 @@ class Pelando:
     name = "pelando"
 
     def fetch(self) -> list[Deal]:
+        s = get_settings()
         try:
-            resp = get(LISTING_URL)
+            resp = httpx.get(
+                API_URL,
+                params={"scenario": "Main-Feed", "limit": 30},
+                headers=_headers(),
+                timeout=s.request_timeout,
+            )
             resp.raise_for_status()
+            payload = resp.json()
         except Exception as exc:
             log.warning("pelando fetch failed: %s", exc)
             return []
 
-        data = parse_next_data(resp.text)
-        if not data:
-            log.warning("pelando: no __NEXT_DATA__ found (layout changed?)")
+        data = payload.get("data") if isinstance(payload, dict) else None
+        items = data.get("deals") if isinstance(data, dict) else None
+        if not isinstance(items, list):
+            log.warning("pelando: unexpected payload shape (API changed?)")
             return []
 
         deals: dict[str, Deal] = {}
-        for node in iter_dicts(data):
-            if not _looks_like_deal(node):
+        for item in items:
+            if not isinstance(item, dict):
                 continue
-            deal = _to_deal(node)
+            deal = _to_deal(item)
             if deal and deal.key not in deals:
                 deals[deal.key] = deal
 

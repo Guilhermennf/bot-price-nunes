@@ -51,7 +51,8 @@ def _fmt(v) -> str:
 def evaluate(deal: Deal) -> Evaluation | None:
     s = get_settings()
     if not s.gemini_api_key:
-        raise RuntimeError("GEMINI_API_KEY not configured")
+        log.warning("GEMINI_API_KEY not configured; skipping AI evaluation")
+        return None
 
     try:
         from google import genai
