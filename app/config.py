@@ -23,6 +23,8 @@ class Settings(BaseSettings):
     # Gemini
     gemini_api_key: str = ""
     gemini_model: str = "gemini-flash-latest"
+    # Tried in order when the primary model is overloaded (503) / rate-limited.
+    gemini_fallback_model: str = "gemini-flash-lite-latest"
 
     # Feature flags / tuning
     enable_checkout_sim: bool = False

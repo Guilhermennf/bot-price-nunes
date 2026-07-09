@@ -8,12 +8,16 @@ from __future__ import annotations
 
 import json
 import logging
+import time
 from dataclasses import dataclass
 
 from app.config import get_settings
 from app.models import Deal
 
 log = logging.getLogger(__name__)
+
+# Transient errors worth retrying / falling back on (free tier hits these).
+_TRANSIENT_MARKERS = ("503", "UNAVAILABLE", "429", "RESOURCE_EXHAUSTED", "500")
 
 _PROMPT = """Você é um curador de ofertas para um canal de promoções brasileiro.
 Avalie se esta é uma oferta REALMENTE boa (desconto legítimo, não preço inflado).
@@ -74,18 +78,43 @@ def evaluate(deal: Deal) -> Evaluation | None:
         coupon=deal.coupon or "nenhum",
     )
 
-    try:
-        resp = client.models.generate_content(
-            model=s.gemini_model,
-            contents=prompt,
-            config=types.GenerateContentConfig(
-                response_mime_type="application/json",
-                temperature=0.7,
-            ),
-        )
-        data = json.loads(resp.text)
-    except Exception as exc:
-        log.warning("gemini evaluate failed for %s: %s", deal.title, exc)
+    config = types.GenerateContentConfig(
+        response_mime_type="application/json",
+        temperature=0.7,
+    )
+
+    # Primary model with retries, then fallback model. Free tier throws
+    # transient 503/429 under load; a short backoff usually clears it.
+    models = [s.gemini_model]
+    if s.gemini_fallback_model and s.gemini_fallback_model not in models:
+        models.append(s.gemini_fallback_model)
+
+    data = None
+    last_exc: Exception | None = None
+    for model in models:
+        for attempt in range(2):
+            try:
+                resp = client.models.generate_content(
+                    model=model, contents=prompt, config=config,
+                )
+                data = json.loads(resp.text)
+                break
+            except Exception as exc:
+                last_exc = exc
+                msg = str(exc)
+                if any(m in msg for m in _TRANSIENT_MARKERS):
+                    if attempt == 0:
+                        time.sleep(3)
+                        continue
+                    log.info("gemini %s overloaded; trying next option", model)
+                    break  # -> next model
+                log.warning("gemini evaluate failed for %s: %s", deal.title, exc)
+                return None
+        if data is not None:
+            break
+
+    if data is None:
+        log.warning("gemini exhausted all models for %s: %s", deal.title, last_exc)
         return None
 
     return Evaluation(

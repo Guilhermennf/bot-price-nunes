@@ -12,8 +12,14 @@ from __future__ import annotations
 import argparse
 import logging
 import random
+import sys
 import time
 from urllib.parse import urlsplit
+
+# Windows consoles default to cp1252, which chokes on emoji in deal copy.
+if sys.stdout and hasattr(sys.stdout, "reconfigure"):
+    sys.stdout.reconfigure(encoding="utf-8", errors="replace")
+    sys.stderr.reconfigure(encoding="utf-8", errors="replace")
 
 from app.ai import gemini
 from app.config import get_settings
