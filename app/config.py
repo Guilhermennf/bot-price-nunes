@@ -4,6 +4,7 @@ from __future__ import annotations
 
 from functools import lru_cache
 
+from pydantic import field_validator
 from pydantic_settings import BaseSettings, SettingsConfigDict
 
 
@@ -11,6 +12,15 @@ class Settings(BaseSettings):
     model_config = SettingsConfigDict(
         env_file=".env", env_file_encoding="utf-8", extra="ignore"
     )
+
+    @field_validator("*", mode="before")
+    @classmethod
+    def _strip_bom_and_whitespace(cls, v):
+        """Secrets set from Windows shells can arrive with a leading UTF-8 BOM
+        (U+FEFF) or stray whitespace — scrub every string value."""
+        if isinstance(v, str):
+            return v.strip().lstrip("﻿").strip()
+        return v
 
     # Telegram
     telegram_bot_token: str = ""
