@@ -1,8 +1,13 @@
 # bot-price-nunes
 
-Free-tier Telegram bot that surfaces **genuine** price drops from Brazilian
-e-commerce. Runs as a single stateless script on GitHub Actions cron; all state
-lives in Supabase.
+[![ci](https://github.com/Guilhermennf/bot-price-nunes/actions/workflows/ci.yml/badge.svg)](https://github.com/Guilhermennf/bot-price-nunes/actions/workflows/ci.yml)
+[![deals](https://github.com/Guilhermennf/bot-price-nunes/actions/workflows/deals.yml/badge.svg)](https://github.com/Guilhermennf/bot-price-nunes/actions/workflows/deals.yml)
+
+Free-tier Telegram bot behind **[@nunestechpromos](https://t.me/nunestechpromos)** —
+surfaces **genuine** tech price drops from Brazilian e-commerce (Amazon,
+Mercado Livre, AliExpress, Shopee, Magalu). Runs as a single stateless script
+on GitHub Actions cron; all state lives in Supabase. Admin dashboard in
+Next.js (Auth.js) deployed on Vercel.
 
 ## Pipeline
 
@@ -18,9 +23,40 @@ GitHub Actions cron
 
 ## Stack (all free tier)
 
-- Python 3.12 · `httpx` + `selectolax` · `playwright` (fallback only)
-- Supabase (Postgres) · Google Gemini (`gemini-flash-latest`) · Telegram Bot API
-- GitHub Actions scheduled workflow
+- **Bot:** Python 3.12 · `httpx` + `selectolax` · `playwright` (fallback only) ·
+  pytest · ruff · mypy · Sentry · Docker
+- **Data/AI:** Supabase (Postgres + RLS) · Google Gemini (`gemini-flash-latest`) ·
+  Telegram Bot API
+- **Dashboard:** Next.js (App Router) · Auth.js v5 · shadcn/ui · TanStack Table ·
+  Zod · Recharts · Vitest + Testing Library · Playwright e2e · Vercel
+- **CI/CD:** GitHub Actions (pipeline cron + quality gate) · Dependabot
+
+## Quality gate
+
+```bash
+# bot
+pytest && ruff check app tests && mypy
+# dashboard
+cd dashboard && npm run test && npm run typecheck && npm run build
+```
+
+Both run on every push via [`ci.yml`](.github/workflows/ci.yml).
+
+## Dashboard auth & pagination
+
+- Login em `/login` (Auth.js Credentials + bcrypt); todas as rotas protegidas
+  por middleware. Crie o primeiro admin:
+  `cd dashboard && npm run seed:admin -- voce@email.com "senha-forte"`
+- `/deals`: tabela paginada server-side (TanStack Table) com filtros de loja,
+  busca e score mínimo.
+- e2e local: seed um admin de teste e `npm run e2e`.
+
+## Docker
+
+```bash
+docker compose run bot-dry   # dry-run containerizado
+docker compose run bot       # run real
+```
 
 ## Setup
 

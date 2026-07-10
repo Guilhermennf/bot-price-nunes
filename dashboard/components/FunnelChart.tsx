@@ -36,7 +36,7 @@ export default function FunnelChart({
             cursor={{ fill: "var(--grid)", opacity: 0.4 }}
             contentStyle={{
               background: "var(--surface)",
-              border: "1px solid var(--border)",
+              border: "1px solid var(--viz-border)",
               borderRadius: 8,
               color: "var(--ink)",
               fontSize: 12,

@@ -1,0 +1,53 @@
+name: ci
+
+on:
+  push:
+    branches: [master]
+  pull_request:
+
+jobs:
+  python:
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    steps:
+      - uses: actions/checkout@v6
+      - uses: actions/setup-python@v6
+        with:
+          python-version: "3.12"
+          cache: pip
+      - name: Install
+        run: pip install -r requirements-dev.txt
+      - name: Lint (ruff)
+        run: ruff check app tests
+      - name: Types (mypy)
+        run: mypy
+      - name: Tests (pytest)
+        run: pytest
+
+  dashboard:
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    defaults:
+      run:
+        working-directory: dashboard
+    steps:
+      - uses: actions/checkout@v6
+      - uses: actions/setup-node@v6
+        with:
+          node-version: 24
+          cache: npm
+          cache-dependency-path: dashboard/package-lock.json
+      - name: Install
+        run: npm ci
+      - name: Types (tsc)
+        run: npm run typecheck
+      - name: Tests (vitest)
+        run: npm run test
+      - name: Build (next)
+        env:
+          # fake-but-valid env so the build's Zod validation passes;
+          # no real network calls happen at build time (routes are dynamic)
+          SUPABASE_URL: https://placeholder.supabase.co
+          SUPABASE_KEY: placeholder-key-placeholder-key
+          AUTH_SECRET: placeholder-secret-16
+        run: npm run build

@@ -163,6 +163,38 @@ posts/dia, funil da última run (quantos morreram em cada portão), tabela das
 últimas ofertas e saúde das runs — o funil torna visível, por exemplo, o
 Pelando caindo para 0 no CI (403) enquanto o Promobit segue.
 
+## Camada 9 — Autenticação do dashboard (Auth.js v5)
+
+**O quê:** dashboard é restrito a admins — login em `/login`, todo o resto
+protegido por middleware.
+
+**Como:** Auth.js (NextAuth v5) com Credentials provider: email + senha
+verificados contra `admin_users` no Supabase (hash bcrypt, custo 12), sessão
+JWT. O middleware roda em **runtime Node** (não edge) porque o provider importa
+`bcryptjs` e `supabase-js`. A tabela `admin_users` tem RLS ligado **sem
+policies** — o papel `anon` não consegue nem ler; só a service key server-side
+alcança. Input validado com Zod nos dois lados (form e authorize).
+
+**Decisão:** Credentials + tabela própria em vez de OAuth — zero dependência
+externa, allowlist explícita de admins, e o seed é um comando
+(`npm run seed:admin`).
+
+## Camada 10 — Qualidade e testes
+
+- **Bot (pytest, 37 testes):** parsers testados contra **fixtures gravadas dos
+  sites reais** (o teste quebra se o parsing regride, sem depender de rede);
+  normalização de URL; filtros de loja/tech; casos da validação de preço
+  (queda real, "de/por" inflado, sem histórico, banco fora); afiliados;
+  template de mensagem.
+- **Dashboard:** Vitest + Testing Library (componentes, estados de paginação)
+  e Playwright e2e local (redirect de não-autenticado, senha errada, login
+  válido, paginação de /deals).
+- **Gate estático:** ruff + mypy (Python), tsc estrito (TS).
+- **CI:** dois jobs paralelos em todo push/PR ([ci.yml](.github/workflows/ci.yml));
+  Dependabot semanal para pip, npm e actions.
+- **Observabilidade:** Sentry nos dois lados, ativado por env var (no-op sem
+  DSN — zero acoplamento).
+
 ## Incidentes reais (histórias boas de contar)
 
 1. **O BOM invisível:** secrets setados via pipe do PowerShell 5.1 chegaram ao

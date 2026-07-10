@@ -16,7 +16,7 @@ const when = (iso: string) =>
 export default function DealsTable({ deals }: { deals: DealRow[] }) {
   if (!deals.length) {
     return (
-      <p className="p-4 text-sm" style={{ color: "var(--muted)" }}>
+      <p className="p-4 text-sm" style={{ color: "var(--viz-muted)" }}>
         Nenhuma oferta postada ainda.
       </p>
     );
@@ -27,7 +27,7 @@ export default function DealsTable({ deals }: { deals: DealRow[] }) {
         <thead>
           <tr
             className="text-left text-xs uppercase tracking-wide"
-            style={{ color: "var(--muted)" }}
+            style={{ color: "var(--viz-muted)" }}
           >
             <th className="px-4 py-2 font-medium">Produto</th>
             <th className="px-4 py-2 font-medium">Loja</th>
@@ -42,7 +42,7 @@ export default function DealsTable({ deals }: { deals: DealRow[] }) {
             <tr
               key={d.id}
               className="border-t"
-              style={{ borderColor: "var(--border)" }}
+              style={{ borderColor: "var(--viz-border)" }}
             >
               <td className="max-w-md truncate px-4 py-2" title={d.title}>
                 {d.title}
@@ -66,7 +66,7 @@ export default function DealsTable({ deals }: { deals: DealRow[] }) {
                 {d.coupon ? (
                   <code className="text-xs">{d.coupon}</code>
                 ) : (
-                  <span style={{ color: "var(--muted)" }}>—</span>
+                  <span style={{ color: "var(--viz-muted)" }}>—</span>
                 )}
               </td>
               <td

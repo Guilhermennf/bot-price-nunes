@@ -23,14 +23,14 @@ export default function PostsChart({
           <CartesianGrid stroke="var(--grid)" vertical={false} />
           <XAxis
             dataKey="day"
-            tick={{ fill: "var(--muted)", fontSize: 11 }}
+            tick={{ fill: "var(--viz-muted)", fontSize: 11 }}
             axisLine={{ stroke: "var(--baseline)" }}
             tickLine={false}
             interval={1}
           />
           <YAxis
             allowDecimals={false}
-            tick={{ fill: "var(--muted)", fontSize: 11 }}
+            tick={{ fill: "var(--viz-muted)", fontSize: 11 }}
             axisLine={false}
             tickLine={false}
           />
@@ -38,7 +38,7 @@ export default function PostsChart({
             cursor={{ fill: "var(--grid)", opacity: 0.4 }}
             contentStyle={{
               background: "var(--surface)",
-              border: "1px solid var(--border)",
+              border: "1px solid var(--viz-border)",
               borderRadius: 8,
               color: "var(--ink)",
               fontSize: 12,

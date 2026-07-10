@@ -2,6 +2,7 @@ import DealsTable from "@/components/DealsTable";
 import FunnelChart from "@/components/FunnelChart";
 import PostsChart from "@/components/PostsChart";
 import RunsTable from "@/components/RunsTable";
+import SiteNav from "@/components/SiteNav";
 import StatTiles from "@/components/StatTiles";
 import {
   dealsSince,
@@ -10,7 +11,8 @@ import {
   recentDeals,
 } from "@/lib/queries";
 
-export const revalidate = 120;
+// auth() in SiteNav reads cookies -> the route is dynamic by nature.
+export const dynamic = "force-dynamic";
 
 function Section({
   title,
@@ -23,7 +25,7 @@ function Section({
     <section className="card">
       <h2
         className="border-b px-4 py-3 text-sm font-semibold"
-        style={{ borderColor: "var(--border)" }}
+        style={{ borderColor: "var(--viz-border)" }}
       >
         {title}
       </h2>
@@ -100,21 +102,17 @@ export default async function Page() {
 
   return (
     <main className="mx-auto max-w-6xl space-y-4 p-4 sm:p-6">
-      <header className="flex items-baseline justify-between">
-        <div>
-          <h1 className="text-xl font-bold">Deal Bot — Dashboard</h1>
-          <p className="text-sm" style={{ color: "var(--ink-2)" }}>
-            Pipeline de ofertas tech · Promobit + Pelando → Telegram
-          </p>
-        </div>
+      <SiteNav active="overview" />
+      <p className="text-sm" style={{ color: "var(--ink-2)" }}>
+        Pipeline de ofertas tech · Promobit + Pelando → Telegram ·{" "}
         <a
           href="https://github.com/Guilhermennf/bot-price-nunes"
-          className="text-sm underline"
+          className="underline"
           style={{ color: "var(--series-1)" }}
         >
           repo
         </a>
-      </header>
+      </p>
 
       <StatTiles tiles={tiles} />
 
@@ -129,7 +127,7 @@ export default async function Page() {
             {funnel.length ? (
               <FunnelChart data={funnel} />
             ) : (
-              <p className="p-4 text-sm" style={{ color: "var(--muted)" }}>
+              <p className="p-4 text-sm" style={{ color: "var(--viz-muted)" }}>
                 Sem dados de runs ainda — rode o schema.sql atualizado no
                 Supabase.
               </p>
@@ -146,7 +144,7 @@ export default async function Page() {
         <RunsTable runs={runs} />
       </Section>
 
-      <footer className="pb-4 text-xs" style={{ color: "var(--muted)" }}>
+      <footer className="pb-4 text-xs" style={{ color: "var(--viz-muted)" }}>
         Atualiza a cada 2 min · GitHub Actions cron a cada 30 min · Supabase +
         Gemini + Telegram, tudo free tier
       </footer>

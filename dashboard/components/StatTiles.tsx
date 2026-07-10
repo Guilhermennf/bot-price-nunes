@@ -5,7 +5,7 @@ export default function StatTiles({ tiles }: { tiles: Tile[] }) {
     <div className="grid grid-cols-2 gap-3 sm:grid-cols-4">
       {tiles.map((t) => (
         <div key={t.label} className="card p-4">
-          <div className="text-xs font-medium" style={{ color: "var(--muted)" }}>
+          <div className="text-xs font-medium" style={{ color: "var(--viz-muted)" }}>
             {t.label}
           </div>
           <div className="mt-1 text-2xl font-semibold">{t.value}</div>

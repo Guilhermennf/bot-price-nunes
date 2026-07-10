@@ -11,7 +11,7 @@ const when = (iso: string) =>
 export default function RunsTable({ runs }: { runs: RunRow[] }) {
   if (!runs.length) {
     return (
-      <p className="p-4 text-sm" style={{ color: "var(--muted)" }}>
+      <p className="p-4 text-sm" style={{ color: "var(--viz-muted)" }}>
         Sem dados de runs ainda — rode o schema.sql atualizado no Supabase.
       </p>
     );
@@ -22,7 +22,7 @@ export default function RunsTable({ runs }: { runs: RunRow[] }) {
         <thead>
           <tr
             className="text-left text-xs uppercase tracking-wide"
-            style={{ color: "var(--muted)" }}
+            style={{ color: "var(--viz-muted)" }}
           >
             <th className="px-4 py-2 font-medium">Início</th>
             <th className="px-4 py-2 font-medium text-right">Coletadas</th>
@@ -41,7 +41,7 @@ export default function RunsTable({ runs }: { runs: RunRow[] }) {
             <tr
               key={r.id}
               className="border-t"
-              style={{ borderColor: "var(--border)" }}
+              style={{ borderColor: "var(--viz-border)" }}
             >
               <td className="tnum whitespace-nowrap px-4 py-2">
                 {when(r.started_at)}

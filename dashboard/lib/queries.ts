@@ -59,6 +59,53 @@ export async function lastRuns(limit = 12): Promise<RunRow[]> {
   return data ?? [];
 }
 
+export type DealsPage = {
+  rows: DealRow[];
+  total: number;
+  page: number;
+  pageSize: number;
+};
+
+export type DealsFilter = {
+  page?: number;
+  pageSize?: number;
+  store?: string;
+  q?: string;
+  minScore?: number;
+};
+
+/** Server-side paginated deals with optional filters. */
+export async function pagedDeals(filter: DealsFilter): Promise<DealsPage> {
+  const page = Math.max(1, filter.page ?? 1);
+  const pageSize = Math.min(100, Math.max(5, filter.pageSize ?? 20));
+  const from = (page - 1) * pageSize;
+
+  let query = db()
+    .from("deals")
+    .select("id,title,store,price,coupon,score,posted_at", { count: "exact" })
+    .order("posted_at", { ascending: false })
+    .range(from, from + pageSize - 1);
+
+  if (filter.store) query = query.eq("store", filter.store);
+  if (filter.minScore) query = query.gte("score", filter.minScore);
+  if (filter.q) query = query.ilike("title", `%${filter.q}%`);
+
+  const { data, error, count } = await query;
+  if (error) throw error;
+  return { rows: data ?? [], total: count ?? 0, page, pageSize };
+}
+
+/** Distinct store names present in the deals table (for the filter select). */
+export async function storeNames(): Promise<string[]> {
+  const { data, error } = await db()
+    .from("deals")
+    .select("store")
+    .not("store", "is", null)
+    .limit(1000);
+  if (error) return [];
+  return [...new Set((data ?? []).map((r) => r.store as string))].sort();
+}
+
 /** deals posted per calendar day (UTC) over the trailing `days`. */
 export function postsPerDay(deals: DealRow[], days: number) {
   const counts = new Map<string, number>();

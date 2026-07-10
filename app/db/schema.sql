@@ -69,3 +69,14 @@ create policy anon_read_price_history on price_history
 drop policy if exists anon_read_runs on runs;
 create policy anon_read_runs on runs
     for select to anon using (true);
+
+-- Dashboard admins (Auth.js Credentials). RLS on with NO policies: the anon
+-- key can't touch this table at all; only the service key (server-side) can.
+create table if not exists admin_users (
+    id            bigint generated always as identity primary key,
+    email         text not null unique,
+    password_hash text not null,
+    created_at    timestamptz not null default now()
+);
+
+alter table admin_users enable row level security;
