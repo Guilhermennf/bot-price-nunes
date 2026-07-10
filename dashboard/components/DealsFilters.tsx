@@ -1,9 +1,19 @@
 "use client";
 
 import { useRouter } from "next/navigation";
+import { useState } from "react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "@/components/ui/select";
+
+const ALL_STORES = "__all__";
 
 export default function DealsFilters({
   stores,
@@ -13,38 +23,47 @@ export default function DealsFilters({
   current: { store: string; q: string; minScore: string };
 }) {
   const router = useRouter();
+  const [store, setStore] = useState(current.store || ALL_STORES);
 
-  function apply(formData: FormData) {
+  // A plain onSubmit + preventDefault (not the `action` prop) so this never
+  // risks a native browser POST to the current route — that route has no
+  // POST handler and would otherwise round-trip through the server.
+  function handleSubmit(e: React.FormEvent<HTMLFormElement>) {
+    e.preventDefault();
+    const formData = new FormData(e.currentTarget);
     const params = new URLSearchParams();
-    for (const key of ["q", "store", "minScore"] as const) {
-      const v = String(formData.get(key) ?? "").trim();
-      if (v) params.set(key, v);
-    }
+    const q = String(formData.get("q") ?? "").trim();
+    const minScore = String(formData.get("minScore") ?? "").trim();
+    if (q) params.set("q", q);
+    if (minScore) params.set("minScore", minScore);
+    if (store !== ALL_STORES) params.set("store", store);
     router.push(`/deals?${params.toString()}`);
   }
 
   return (
-    <form action={apply} className="flex flex-wrap items-end gap-3">
+    <form onSubmit={handleSubmit} className="flex flex-wrap items-end gap-3">
       <div className="min-w-48 flex-1 space-y-1">
         <Label htmlFor="q">Buscar</Label>
         <Input id="q" name="q" placeholder="título do produto…"
                defaultValue={current.q} />
       </div>
       <div className="space-y-1">
-        <Label htmlFor="store">Loja</Label>
-        <select
-          id="store"
-          name="store"
-          defaultValue={current.store}
-          className="border-input bg-transparent h-9 rounded-md border px-3 text-sm"
-        >
-          <option value="">Todas</option>
-          {stores.map((s) => (
-            <option key={s} value={s}>
-              {s}
-            </option>
-          ))}
-        </select>
+        <Label htmlFor="store-trigger">Loja</Label>
+        <Select value={store} onValueChange={(v) => setStore(v ?? ALL_STORES)}>
+          <SelectTrigger id="store-trigger" className="w-40">
+            <SelectValue placeholder="Todas">
+              {store === ALL_STORES ? "Todas" : store}
+            </SelectValue>
+          </SelectTrigger>
+          <SelectContent>
+            <SelectItem value={ALL_STORES}>Todas</SelectItem>
+            {stores.map((s) => (
+              <SelectItem key={s} value={s}>
+                {s}
+              </SelectItem>
+            ))}
+          </SelectContent>
+        </Select>
       </div>
       <div className="space-y-1">
         <Label htmlFor="minScore">Score mín.</Label>
