@@ -6,12 +6,15 @@ CLI smoke test:  python -m app.notify.telegram "test message"
 from __future__ import annotations
 
 import html
+import logging
 import sys
 
 import httpx
 
 from app.config import get_settings
 from app.models import Deal
+
+log = logging.getLogger(__name__)
 
 _API = "https://api.telegram.org/bot{token}/sendMessage"
 
@@ -34,20 +37,25 @@ def send_message(text: str, disable_preview: bool = False) -> dict:
     return resp.json()
 
 
-CHANNEL_NAME = "NUNES TECH PROMOS"
-CHANNEL_LINK = "t.me/nunestechpromos"
+def shorten_url(url: str) -> str:
+    """Shorten a URL via TinyURL's free, keyless API.
 
-
-def _hashtag(category: str | None) -> str | None:
-    """Turn Gemini's category into a channel hashtag: 'placa de vídeo' -> #placadevideo."""
-    if not category:
-        return None
-    import re
-    import unicodedata
-    folded = unicodedata.normalize("NFKD", category.lower())
-    folded = "".join(c for c in folded if not unicodedata.combining(c))
-    slug = re.sub(r"[^a-z0-9]", "", folded)
-    return f"#{slug}" if slug else None
+    Fails soft: any error (network, non-2xx, empty/odd body) returns the
+    original URL unchanged rather than blocking the post.
+    """
+    try:
+        resp = httpx.get(
+            "https://tinyurl.com/api-create.php",
+            params={"url": url},
+            timeout=10,
+        )
+        resp.raise_for_status()
+        short = resp.text.strip()
+        if short.startswith("http"):
+            return short
+    except Exception as exc:
+        log.info("shorten_url failed, using original link: %s", exc)
+    return url
 
 
 def _brl(value: float) -> str:
@@ -77,33 +85,34 @@ def _price_line(deal: Deal) -> str | None:
     return f"<b>R$ {_brl(deal.price)}</b>"
 
 
-def _format_deal(deal: Deal) -> str:
-    """Branded channel message: título curto / preço / cupom / loja / link."""
-    lines: list[str] = [f"⚡ <b>{CHANNEL_NAME}</b>", ""]
-
-    lines.append(f"🔥 <b>{html.escape(_short_title(deal))}</b>")
-    lines.append("")
+def _format_deal(deal: Deal, link: str | None = None) -> str:
+    """Structured message: título / preço / cupom+loja / link — blank-line
+    separated sections, no header or footer."""
+    link = link or deal.url
+    sections: list[str] = [f"🔥 <b>{html.escape(_short_title(deal))}</b>"]
 
     price_line = _price_line(deal)
     if price_line:
-        lines.append(price_line)
+        sections.append(price_line)
 
+    facts = []
     if deal.coupon:
-        lines.append(f"🎟️ Cupom: <code>{html.escape(deal.coupon)}</code>")
-
+        facts.append(f"🎟️ Cupom: <code>{html.escape(deal.coupon)}</code>")
     if deal.store:
-        lines.append(f"🏬 {html.escape(deal.store)}")
+        facts.append(f"🏬 {html.escape(deal.store)}")
+    if facts:
+        sections.append("\n".join(facts))
 
-    lines.append(f'🛒 <a href="{html.escape(deal.url)}">COMPRAR AGORA</a>')
+    sections.append(f'🛒 <a href="{html.escape(link)}">{html.escape(link)}</a>')
 
-    footer = [_hashtag(deal.category), f"➡️ {CHANNEL_LINK}"]
-    lines.extend(["", " · ".join(p for p in footer if p)])
-    return "\n".join(lines)
+    return "\n\n".join(sections)
 
 
 def send_deal(deal: Deal) -> dict:
-    """Post a formatted deal (link preview ON so the product image shows)."""
-    return send_message(_format_deal(deal), disable_preview=False)
+    """Post a formatted deal with a shortened store link (link preview ON so
+    the product image still shows)."""
+    short_link = shorten_url(deal.url)
+    return send_message(_format_deal(deal, link=short_link), disable_preview=False)
 
 
 if __name__ == "__main__":
