@@ -1,7 +1,12 @@
 """Pipeline orchestrator — the single entrypoint the cron job runs.
 
-    python -m app.main            # full run: scrape -> validate -> AI -> post
-    python -m app.main --dry-run  # everything except Telegram send + deals write
+    python -m app.main                # collect: scrape -> validate -> AI -> queue
+    python -m app.main --dry-run      # collect, but print candidates, write nothing
+    python -m app.main --post-queue 1 # drain N queued deals to the channel
+
+Collect runs approve deals into the `post_queue` table; posting runs (fired
+frequently by an external scheduler) drain it one deal at a time, so the
+channel gets a steady drip instead of bursts.
 
 Stateless: all memory lives in Supabase. Any single stage failing degrades
 gracefully rather than aborting the whole run.
@@ -22,11 +27,11 @@ if sys.stdout and hasattr(sys.stdout, "reconfigure"):
     sys.stdout.reconfigure(encoding="utf-8", errors="replace")
     sys.stderr.reconfigure(encoding="utf-8", errors="replace")  # type: ignore[union-attr]
 
-from app import affiliate, filters
+from app import affiliate, filters, resolver
 from app.ai import gemini
 from app.config import get_settings
 from app.models import Deal
-from app.sources import amazon, mercadolivre, pelando, promobit
+from app.sources import amazon, gatry, mercadolivre, pechinchou, pelando, promobit
 from app.validation import checkout_sim
 from app.validation.price_history import validate
 
@@ -66,17 +71,6 @@ def already_posted(deal: Deal) -> bool:
         return False
 
 
-def mark_posted(deal: Deal) -> None:
-    db = _db()
-    if not db:
-        return
-    try:
-        db.record_posted_deal(deal.key, deal.title, deal.store, deal.price,
-                              deal.coupon, deal.score, deal.category)
-    except Exception as exc:
-        log.warning("record_posted_deal failed: %s", exc)
-
-
 def record_run_stats(started_at: str, counters: dict, sources: dict) -> None:
     db = _db()
     if not db:
@@ -87,11 +81,91 @@ def record_run_stats(started_at: str, counters: dict, sources: dict) -> None:
         log.warning("record_run failed: %s", exc)
 
 
+def _already_queued(deal: Deal) -> bool:
+    db = _db()
+    if not db:
+        return False
+    try:
+        return db.is_queued(deal.key)
+    except Exception as exc:
+        log.warning("queue check failed: %s", exc)
+        return False
+
+
+def enqueue(deal: Deal) -> None:
+    db = _db()
+    if not db:
+        log.warning("no DB configured; cannot queue %s", deal.title)
+        return
+    try:
+        db.enqueue_post({
+            "url_key": deal.key,
+            "title": deal.title,
+            "short_title": deal.short_title,
+            "store": deal.store,
+            "price": deal.price,
+            "discount_pct": deal.discount_pct,
+            "coupon": deal.coupon,
+            "category": deal.category,
+            "score": deal.score,
+            "url": deal.url,
+        })
+        log.info("queued: %s", deal.short_title or deal.title)
+    except Exception as exc:
+        log.warning("enqueue failed: %s", exc)
+
+
+def post_from_queue(limit: int = 1) -> None:
+    """Drain up to `limit` pending deals from the queue to the channel."""
+    db = _db()
+    if not db:
+        log.error("no DB configured; nothing to post")
+        return
+    from app.notify.telegram import send_deal
+
+    try:
+        rows = db.fetch_pending_posts(limit)
+    except Exception as exc:
+        log.error("queue fetch failed: %s", exc)
+        return
+    if not rows:
+        log.info("queue empty; nothing to post")
+        return
+
+    for row in rows:
+        deal = Deal(title=row["title"], store=row.get("store") or "",
+                    url=row["url"],
+                    price=float(row["price"]) if row.get("price") else None,
+                    coupon=row.get("coupon"))
+        deal.short_title = row.get("short_title")
+        deal.discount_pct = (
+            float(row["discount_pct"]) if row.get("discount_pct") else None
+        )
+        deal.category = row.get("category")
+        deal.score = row.get("score")
+        try:
+            send_deal(deal)
+        except Exception as exc:
+            log.error("send failed for queue id %s: %s", row["id"], exc)
+            continue
+        try:
+            # Dedupe record keyed on the ORIGINAL product key, not the
+            # resolved URL's — same identity the collect run checks.
+            db.record_posted_deal(row["url_key"], deal.title, deal.store,
+                                  deal.price, deal.coupon, deal.score,
+                                  deal.category)
+            db.mark_queue_posted(row["id"])
+        except Exception as exc:
+            log.warning("post bookkeeping failed for id %s: %s", row["id"], exc)
+        log.info("posted from queue: %s", deal.short_title or deal.title)
+        time.sleep(random.uniform(0.5, 1.5))
+
+
 # ------------------------------- stages --------------------------------------
 
 def gather() -> list[Deal]:
     deals: dict[str, Deal] = {}
-    for src in (promobit, pelando):
+    for src in (promobit, pelando, gatry, pechinchou):
         for deal in src.fetch():
             deals.setdefault(deal.key, deal)
     log.info("gathered %d unique candidates", len(deals))
@@ -190,22 +264,20 @@ def run(dry_run: bool = False) -> None:
                      evaluation.reason)
             continue
 
-        if already_posted(deal):
+        if already_posted(deal) or _already_queued(deal):
             counters["skipped_dupe"] += 1
-            log.info("skip (already posted): %s", deal.title)
+            log.info("skip (already posted/queued): %s", deal.title)
             continue
 
-        # Promobit's feed only links to their own offer page; swap in the
-        # validated direct store URL. No valid store URL = don't post at all
-        # (a Promobit or "bad merchant" link is worse than no post).
-        # The dedupe key was computed from the original URL and is unaffected.
-        if deal.source == "promobit":
-            direct = promobit.resolve_store_url(deal)
-            if not direct:
-                counters["skipped_resolve"] += 1
-                log.info("skip (no direct store link): %s", deal.title)
-                continue
-            deal.url = direct
+        # Swap in a validated direct product URL (per-source strategy in
+        # app/resolver.py). No valid link = don't post at all — a generic or
+        # broken link is worse than no post. Dedupe keys stay on the original.
+        direct = resolver.resolve_posting_url(deal)
+        if not direct:
+            counters["skipped_resolve"] += 1
+            log.info("skip (no direct store link): %s", deal.title)
+            continue
+        deal.url = direct
 
         # Attach affiliate identity (no-op until env vars are configured).
         deal.url = affiliate.apply(deal.url, deal.store)
@@ -213,10 +285,8 @@ def run(dry_run: bool = False) -> None:
         if dry_run:
             print(_preview(deal))
         else:
-            from app.notify.telegram import send_deal
-            send_deal(deal)
-            mark_posted(deal)
-        counters["posted"] += 1
+            enqueue(deal)
+        counters["posted"] += 1  # semantics: approved into the posting queue
 
         time.sleep(random.uniform(0.5, 1.5))  # be polite between deals
 
@@ -259,7 +329,9 @@ def _init_sentry() -> None:
 def main() -> None:
     parser = argparse.ArgumentParser(description="Brazilian deal bot pipeline")
     parser.add_argument("--dry-run", action="store_true",
-                        help="run everything but don't post to Telegram or write deals")
+                        help="collect, but print candidates instead of queueing")
+    parser.add_argument("--post-queue", type=int, metavar="N", default=None,
+                        help="post up to N pending deals from the queue and exit")
     parser.add_argument("-v", "--verbose", action="store_true")
     args = parser.parse_args()
 
@@ -268,7 +340,10 @@ def main() -> None:
         format="%(asctime)s %(levelname)s %(name)s: %(message)s",
     )
     _init_sentry()
-    run(dry_run=args.dry_run)
+    if args.post_queue is not None:
+        post_from_queue(limit=max(1, args.post_queue))
+    else:
+        run(dry_run=args.dry_run)
 
 
 if __name__ == "__main__":

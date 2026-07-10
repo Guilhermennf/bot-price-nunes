@@ -31,7 +31,10 @@ STORES: dict[str, dict[str, tuple[str, ...]]] = {
     "magalu": {
         "names": ("magalu", "magazine luiza", "magazineluiza", "magazine você",
                   "magazine voce", "magazinevoce"),
-        "hosts": ("magazineluiza.com.br", "magazinevoce.com.br"),
+        # influenciadormagalu.com.br is Magalu's official affiliate-program
+        # storefront (used by Pechinchou links) — same catalog/checkout.
+        "hosts": ("magazineluiza.com.br", "magazinevoce.com.br",
+                  "influenciadormagalu.com.br"),
     },
 }
 

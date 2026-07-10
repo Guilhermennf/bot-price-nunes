@@ -59,3 +59,21 @@ def promobit_html() -> str:
 @pytest.fixture
 def pelando_payload() -> dict:
     return json.loads((FIXTURES / "pelando_feed.json").read_text(encoding="utf-8"))
+
+
+@pytest.fixture
+def gatry_html() -> str:
+    return (FIXTURES / "gatry_home.html").read_text(encoding="utf-8")
+
+
+@pytest.fixture
+def pechinchou_html() -> str:
+    """Recorded promos re-wrapped as a minimal Next.js page."""
+    promos = json.loads(
+        (FIXTURES / "pechinchou_promos.json").read_text(encoding="utf-8")
+    )
+    payload = json.dumps(
+        {"props": {"pageProps": {"promos": {"results": promos["results"]}}}}
+    )
+    return (f'<html><body><script id="__NEXT_DATA__" type="application/json">'
+            f"{payload}</script></body></html>")

@@ -2,13 +2,21 @@ name: deals
 
 on:
   schedule:
-    # Best-effort every 30 min. GitHub may delay/coalesce under load.
+    # Collect runs. GitHub delays/coalesces scheduled workflows heavily
+    # (observed 40min-4h gaps) — POSTING does not rely on this; an external
+    # scheduler (cron-job.org) fires workflow_dispatch mode=post instead.
     - cron: "*/30 * * * *"
-  workflow_dispatch: {}
+  workflow_dispatch:
+    inputs:
+      mode:
+        description: "collect (scrape->queue) or post (drain queue to channel)"
+        type: choice
+        options: [collect, post]
+        default: collect
 
 # Avoid overlapping runs if one takes long.
 concurrency:
-  group: deals
+  group: deals-${{ inputs.mode || 'collect' }}
   cancel-in-progress: false
 
 permissions:
@@ -18,6 +26,8 @@ jobs:
   run:
     runs-on: ubuntu-latest
     timeout-minutes: 15
+    env:
+      MODE: ${{ inputs.mode || 'collect' }}
     steps:
       - uses: actions/checkout@v7
 
@@ -39,10 +49,11 @@ jobs:
           python -m pip install --upgrade pip
           pip install -r requirements.txt
 
-      # Chromium is only needed if ENABLE_BROWSER_CONFIRM / ENABLE_CHECKOUT_SIM
-      # are turned on (both default false) — skip the ~90s install until then.
-      # - name: Install Playwright Chromium
-      #   run: python -m playwright install --with-deps chromium
+      # Chromium is needed by collect runs (Mercado Livre landing resolver);
+      # post runs are light (queue -> Telegram) and skip it.
+      - name: Install Playwright Chromium
+        if: env.MODE == 'collect'
+        run: python -m playwright install --with-deps chromium
 
       - name: Run pipeline
         env:
@@ -51,5 +62,11 @@ jobs:
           SUPABASE_URL: ${{ secrets.SUPABASE_URL }}
           SUPABASE_KEY: ${{ secrets.SUPABASE_KEY }}
           GEMINI_API_KEY: ${{ secrets.GEMINI_API_KEY }}
+          SENTRY_DSN: ${{ secrets.SENTRY_DSN }}
           ENABLE_CHECKOUT_SIM: "false"
-        run: python -m app.main
+        run: |
+          if [ "$MODE" = "post" ]; then
+            python -m app.main --post-queue 1
+          else
+            python -m app.main
+          fi

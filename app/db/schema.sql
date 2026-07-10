@@ -49,6 +49,27 @@ create table if not exists runs (
 
 create index if not exists runs_started_idx on runs (started_at desc);
 
+-- Approved deals waiting to be posted — drained one at a time by the
+-- posting runs so the channel gets a steady drip instead of bursts.
+create table if not exists post_queue (
+    id           bigint generated always as identity primary key,
+    url_key      text not null,
+    title        text not null,
+    short_title  text,
+    store        text,
+    price        numeric,
+    discount_pct numeric,
+    coupon       text,
+    category     text,
+    score        int,
+    url          text not null,
+    created_at   timestamptz not null default now(),
+    posted_at    timestamptz
+);
+
+create index if not exists post_queue_pending_idx
+    on post_queue (created_at) where posted_at is null;
+
 -- ---------------------------------------------------------------------------
 -- Row Level Security: the dashboard reads with the public anon key, so lock
 -- every table to SELECT-only for anon. The bot uses the service_role key,
@@ -57,6 +78,11 @@ create index if not exists runs_started_idx on runs (started_at desc);
 alter table deals          enable row level security;
 alter table price_history  enable row level security;
 alter table runs           enable row level security;
+alter table post_queue     enable row level security;
+
+drop policy if exists anon_read_post_queue on post_queue;
+create policy anon_read_post_queue on post_queue
+    for select to anon using (true);
 
 drop policy if exists anon_read_deals on deals;
 create policy anon_read_deals on deals

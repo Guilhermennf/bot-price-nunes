@@ -110,3 +110,36 @@ def record_run(started_at: str, counters: dict, sources: dict) -> None:
     get_client().table("runs").insert(
         {"started_at": started_at, "sources": sources, **counters}
     ).execute()
+
+
+# ------------------------------ post queue -----------------------------------
+
+def is_queued(url_key: str) -> bool:
+    """True if this product already sits in the pending queue."""
+    resp = (
+        get_client().table("post_queue").select("id")
+        .eq("url_key", url_key).is_("posted_at", "null")
+        .limit(1).execute()
+    )
+    return bool(resp.data)
+
+
+def enqueue_post(item: dict[str, Any]) -> None:
+    """Add an approved deal to the posting queue."""
+    get_client().table("post_queue").insert(item).execute()
+
+
+def fetch_pending_posts(limit: int = 1) -> list[dict[str, Any]]:
+    """Oldest pending queue items first."""
+    resp = (
+        get_client().table("post_queue").select("*")
+        .is_("posted_at", "null").order("created_at")
+        .limit(limit).execute()
+    )
+    return cast(list[dict[str, Any]], resp.data or [])
+
+
+def mark_queue_posted(queue_id: int) -> None:
+    get_client().table("post_queue").update(
+        {"posted_at": datetime.now(UTC).isoformat()}
+    ).eq("id", queue_id).execute()

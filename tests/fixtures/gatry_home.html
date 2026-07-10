@@ -1,0 +1,639 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <meta charset="utf-8">    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>
+        A Melhor Comunidade de Promoções, Cupons e Ofertas do Brasil | Gatry
+    </title>
+
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no" />
+
+    <link rel="stylesheet" href="/css/reset.css?1772475923">    <link rel="stylesheet" href="/vendor/bootstrap/css/bootstrap.min.css?1772475923">    <link rel="stylesheet" href="/vendor/fontawesome/css/all.min.css?1772475923">    <link rel="stylesheet" href="/vendor/fancyapps/dist/fancybox.css?1772475923">    <link rel="stylesheet" href="/vendor/sweetalert2/dist/sweetalert2.min.css?1772475923">    <link rel="stylesheet" href="/vendor/jquery-toast-plugin/dist/jquery.toast.min.css?1772475923">    <link rel="stylesheet" href="/css/default.css?1772475923">
+    <link href="/img/logo_gatry_redondo.png?1772475923" type="image/png" rel="icon"><link href="/img/logo_gatry_redondo.png?1772475923" type="image/png" rel="shortcut icon">
+    <meta name="description" content="Gatry promoções - A mais antiga plataforma de social ecommerce do Brasil. Compartilhe ofertas e papeie sobre os mais diversos produtos vendidos na internet.">
+
+        
+    <script type="text/javascript">
+        var USER_LOGGED = false;
+                var WEB_ROOT = "https://gatry.com";
+        var PUSHER_APP_KEY = "a350d71befcecdb171ea";
+        var PUSHER_APP_CHANNEL = "gatry-site";
+        var PUSHER_IDENTIFY = "ZDQxZDhjZDk4ZjAwYjIwNGU5ODAwOTk4ZWNmODQyN2U=";
+    </script>
+
+    <script src="/vendor/jquery/dist/jquery.min.js?1772475923"></script>    <script src="/vendor/bootstrap/js/bootstrap.bundle.js?1772475923"></script>    <script src="/vendor/imsky-holder/holder.min.js?1772475923"></script>    <script src="/vendor/detectmobilebrowser/detectmobilebrowser.min.js?1772475923"></script>    <script src="/vendor/sweetalert2/dist/sweetalert2.all.min.js?1772475923"></script>    <script src="/vendor/jquery-toast-plugin/dist/jquery.toast.min.js?1772475923"></script>    <script src="/vendor/clipboard/dist/clipboard.min.js?1772475923"></script>    <script src="https://js.pusher.com/7.0/pusher.min.js"></script>    <script src="/vendor/fancyapps/dist/fancybox.umd.js?1772475923"></script>    <script src="/vendor/tribute/dist/tribute.min.js?1772475923"></script>    <script src="/vendor/textarea-autosize/textarea_autosize.min.js?1772475923"></script>    <script src="/js/base.js?1772475923"></script>    <script src="/js/comments.js?1772475923"></script>
+    <script src="/js/promotions/promotions.js?1772475923"></script>
+            <script type="text/javascript">
+            (function(i,s,o,g,r,a,m){i['GoogleAnalyticsObject']=r;i[r]=i[r]||function(){
+            (i[r].q=i[r].q||[]).push(arguments)},i[r].l=1*new Date();a=s.createElement(o),
+            m=s.getElementsByTagName(o)[0];a.async=1;a.src=g;m.parentNode.insertBefore(a,m)
+            })(window,document,'script','//www.google-analytics.com/analytics.js','ga');
+
+            ga('create', 'UA-62348636-1', 'auto');
+            ga('send', 'pageview');
+        </script>
+    
+</head>
+<body>
+    <section class="top-bar">
+        <div class="header">
+            <div class="container">
+                <div class="wrapper-header">
+                    <div class="logo">
+                        <a href="/">Gatry</a>                    </div>
+
+                    <div class="share">
+                        <a href="#" class="link-icon">Compartilhar</a>
+                        <div class="arrow_box">
+                            <ul>
+                                <li data-share="promocao">
+                                    <a href="/promocoes/enviar/">Promoção</a>                                </li>
+                                <li data-share="cupons">
+                                    <a href="/cupons/enviar/">Cupons</a>                                </li>
+                            </ul>
+                        </div>
+                    </div>
+
+                    <div class="login">
+                        <a href="/usuarios/login" data-lightbox-login="data-lightbox-login" class="link-icon">Login</a>                    </div>
+                </div>
+            </div>
+        </div>
+
+        <nav class="menu">
+            <div class="container">
+                <ul>
+                    <li data-menu="recebidos">
+                        <a href="/recebidos">Recebidos <div id="bullet-avaliacoes" class="badge rounded-circle">0</div></a>                    </li>
+
+                    <li data-menu="promocoes">
+                        <a href="/">Promoções <div id="bullet-promocoes" class="badge rounded-circle">0</div></a>                    </li>
+
+                    <li data-menu="cupons">
+                        <a href="/cupons">Cupons <div id="bullet-cupons" class="badge rounded-circle">0</div></a>                    </li>
+
+                    <li data-menu="livre">
+                        <a href="/livre">Livre <div id="bullet-livres" class="badge rounded-circle">0</div></a>                    </li>
+                </ul>
+            </div>
+        </nav>
+    </section>
+
+    <div class="container pl-md-0 pr-md-0 pb-2">
+                <div class="d-flex mt-4">
+	<form method="get" accept-charset="utf-8" class="form-inline col-8 col-sm-9 col-md-10 pl-0" role="form" action="/">	<div class="search-bar col p-0">
+        <div class="input-group">
+            <input class="form-control mr-sm-2" type="text" name="q" placeholder="Pesquisar em Promoções" value="">
+
+            <button class="btn btn-link" type="submit">
+            	<span class="fa fa-search"></span>
+            </button>
+        </div>
+    </div>
+	</form>
+	<a href="/usuarios/criar-alerta" class="btn btn-criar-alerta col-4 col-sm-3 col-md-2 align-items-center d-flex justify-content-center">Criar Alerta</a>
+</div>
+
+<h1 class="d-none">A Melhor Comunidade de Promoções, Cupons e Ofertas do Brasil</h1>
+
+<section class="promotions row">
+
+	
+		
+<article>
+    <div class="image">
+
+        <a href="https://tidd.ly/4feZPN7" target="_blank"><img src="https://cdn.gatry.com/gatry-static/promocao/imagem/2fc6c2b6045ba2f02def704840edd415.jpg" title="Triciclo Elétrico Tuk-tuk 800w Passeio Mobilidade Sem Cnh" itemprop="image" alt=""></a>
+        <div class="option-other ml-auto d-block d-sm-none">
+            <a href="/usuarios/detalhe/2rljgvrz" class="user-link"><img src="https://www.gravatar.com/avatar/9a92c2f28069df9c33ff9c191680ccf8?d=http%3A%2F%2Fgatry.com%2Fimg%2Fuser_default.png" title="radiobrasil" class="user-image rounded-circle" itemprop="image" onerror="this.src=&quot;/img/user_default.png&quot;" alt=""></a>
+            <p class="date" itemprop="startDate" title="28/10/2019 às 17:35">
+                6 minutos <span>atrás</span>            </p>
+        </div>
+    </div>
+
+    <div class="description">
+        <h3><a href="https://tidd.ly/4feZPN7" target="_blank">Triciclo Elétrico Tuk-tuk 800w Passeio Mobilidade Sem Cnh</a></h3>
+
+        <p class="price">
+            R$ 11.969,10        </p>
+
+                <p class="comment text-break">
+                        Torcendo pra criarem regras e ac...        </p>
+        
+        <div class="options d-flex">
+
+                        <div class="option-comment align-self-end">
+                <a href="/promocoes/279424/triciclo-eletrico-tuk-tuk-800w-passeio-mobilidade-sem-cnh?comentarios" data-lightbox-comments="data-lightbox-comments">4 Comentários</a>            </div>
+            
+                        <div class="option-store align-self-end ml-3">
+                <a href="https://tidd.ly/4feZPN7" class="rounded" target="_blank"><span class="d-none d-sm-inline-block">Ir para</span> Pontofrio</a>            </div>
+            
+                        <div class="option-more align-self-end ml-3 -md-block">
+                <a href="/promocoes/279424/triciclo-eletrico-tuk-tuk-800w-passeio-mobilidade-sem-cnh">...</a>            </div>
+            
+            <div class="option-other ml-auto d-none d-sm-block">
+                <a href="/usuarios/detalhe/2rljgvrz" class="user-link"><img src="https://www.gravatar.com/avatar/9a92c2f28069df9c33ff9c191680ccf8?d=http%3A%2F%2Fgatry.com%2Fimg%2Fuser_default.png" title="radiobrasil" class="user-image rounded-circle" itemprop="image" onerror="this.src=&quot;/img/user_default.png&quot;" alt=""></a>
+                <p class="date" itemprop="startDate" title="10/07/2026 às 15:00 ">
+                    6 minutos <span>atrás</span>                </p>
+            </div>
+
+        </div>
+    </div>
+
+</article>
+<article>
+    <div class="image">
+
+        <a href="https://www.amazon.com.br/PHILIPS-Ambilight-65PUG8929-78-Freesync/dp/B0FPBP6G49?tag=gatry0b-20&" target="_blank"><img src="https://cdn.gatry.com/gatry-static/promocao/imagem/4d61686f34282f489d6d48fdf7617018.png" title="PHILIPS, Smart TV, Ambilight THE ONE 65&quot; 4K 144 Hz, Titan OS, 65PUG8929/78" itemprop="image" alt=""></a>
+        <div class="option-other ml-auto d-block d-sm-none">
+            <a href="/usuarios/detalhe/2rljgvrz" class="user-link"><img src="https://www.gravatar.com/avatar/9a92c2f28069df9c33ff9c191680ccf8?d=http%3A%2F%2Fgatry.com%2Fimg%2Fuser_default.png" title="radiobrasil" class="user-image rounded-circle" itemprop="image" onerror="this.src=&quot;/img/user_default.png&quot;" alt=""></a>
+            <p class="date" itemprop="startDate" title="28/10/2019 às 17:35">
+                8 minutos <span>atrás</span>            </p>
+        </div>
+    </div>
+
+    <div class="description">
+        <h3><a href="https://www.amazon.com.br/PHILIPS-Ambilight-65PUG8929-78-Freesync/dp/B0FPBP6G49?tag=gatry0b-20&amp;" target="_blank">PHILIPS, Smart TV, Ambilight THE ONE 65&quot; 4K 144 Hz, Titan OS, 65PUG8929/78</a></h3>
+
+        <p class="price">
+            R$ 3.899,00        </p>
+
+                <p class="comment text-break">
+                        Não tem pior que o sistema Phili...        </p>
+        
+        <div class="options d-flex">
+
+                        <div class="option-comment align-self-end">
+                <a href="/promocoes/279433/philips-smart-tv-ambilight-the-one-65-4k-144-hz-titan-os-65pug8929-78?comentarios" data-lightbox-comments="data-lightbox-comments">5 Comentários</a>            </div>
+            
+                        <div class="option-store align-self-end ml-3">
+                <a href="https://www.amazon.com.br/PHILIPS-Ambilight-65PUG8929-78-Freesync/dp/B0FPBP6G49?tag=gatry0b-20&" class="rounded" target="_blank"><span class="d-none d-sm-inline-block">Ir para</span> Amazon</a>            </div>
+            
+                        <div class="option-more align-self-end ml-3 -md-block">
+                <a href="/promocoes/279433/philips-smart-tv-ambilight-the-one-65-4k-144-hz-titan-os-65pug8929-78">...</a>            </div>
+            
+            <div class="option-other ml-auto d-none d-sm-block">
+                <a href="/usuarios/detalhe/2rljgvrz" class="user-link"><img src="https://www.gravatar.com/avatar/9a92c2f28069df9c33ff9c191680ccf8?d=http%3A%2F%2Fgatry.com%2Fimg%2Fuser_default.png" title="radiobrasil" class="user-image rounded-circle" itemprop="image" onerror="this.src=&quot;/img/user_default.png&quot;" alt=""></a>
+                <p class="date" itemprop="startDate" title="10/07/2026 às 16:23 ">
+                    8 minutos <span>atrás</span>                </p>
+            </div>
+
+        </div>
+    </div>
+
+</article>
+		<div class="w-100 mb-4">
+			<div class="float-left">
+				<a href="#ultimas-promocoes" class="text-gray arrows">↓ Últimas Promoções</a>			</div>
+
+			<div class="float-right">
+				<a href="/comentarios" class="text-gray arrows">Comentários ↑</a>			</div>
+		</div>
+
+		<div id="ultimas-promocoes"></div>
+	
+
+	
+<article>
+    <div class="image">
+
+        <a href="https://www.amazon.com.br/dp/B07F2VQQ4G?th=1&psc=1&linkCode=ll2&tag=gatry0b-20&linkId=a0a8e44b6413c73c7e4601d5ddd3c65d&ref_=as_li_ss_tl" target="_blank"><img src="https://cdn.gatry.com/gatry-static/promocao/imagem/914eaee755140d8f31968f40d167afaf.png" title="Óculos De Natação The One Adulto-Unissex Arena" itemprop="image" alt=""></a>
+        <div class="option-other ml-auto d-block d-sm-none">
+            <a href="/usuarios/detalhe/yank" class="user-link"><img src="https://www.gravatar.com/avatar/237b958fd3ac5047245c94a9fdad944f?d=http%3A%2F%2Fgatry.com%2Fimg%2Fuser_default.png" title="Yank" class="user-image rounded-circle" itemprop="image" onerror="this.src=&quot;/img/user_default.png&quot;" alt=""></a>
+            <p class="date" itemprop="startDate" title="28/10/2019 às 17:35">
+                41 minutos <span>atrás</span>            </p>
+        </div>
+    </div>
+
+    <div class="description">
+        <h3><a href="https://www.amazon.com.br/dp/B07F2VQQ4G?th=1&amp;psc=1&amp;linkCode=ll2&amp;tag=gatry0b-20&amp;linkId=a0a8e44b6413c73c7e4601d5ddd3c65d&amp;ref_=as_li_ss_tl" target="_blank">Óculos De Natação The One Adulto-Unissex Arena</a></h3>
+
+        <p class="price">
+            R$ 101,00        </p>
+
+        
+        <div class="options d-flex">
+
+                        <div class="option-comment align-self-end">
+                <a href="/promocoes/279398/oculos-de-natacao-the-one-adulto-unissex-arena?comentarios" data-lightbox-comments="data-lightbox-comments">0 Comentário</a>            </div>
+            
+                        <div class="option-store align-self-end ml-3">
+                <a href="https://www.amazon.com.br/dp/B07F2VQQ4G?th=1&psc=1&linkCode=ll2&tag=gatry0b-20&linkId=a0a8e44b6413c73c7e4601d5ddd3c65d&ref_=as_li_ss_tl" class="rounded" target="_blank"><span class="d-none d-sm-inline-block">Ir para</span> Amazon</a>            </div>
+            
+                        <div class="option-more align-self-end ml-3 -md-block">
+                <a href="/promocoes/279398/oculos-de-natacao-the-one-adulto-unissex-arena">...</a>            </div>
+            
+            <div class="option-other ml-auto d-none d-sm-block">
+                <a href="/usuarios/detalhe/yank" class="user-link"><img src="https://www.gravatar.com/avatar/237b958fd3ac5047245c94a9fdad944f?d=http%3A%2F%2Fgatry.com%2Fimg%2Fuser_default.png" title="Yank" class="user-image rounded-circle" itemprop="image" onerror="this.src=&quot;/img/user_default.png&quot;" alt=""></a>
+                <p class="date" itemprop="startDate" title="10/07/2026 às 16:55 ">
+                    41 minutos <span>atrás</span>                </p>
+            </div>
+
+        </div>
+    </div>
+
+</article>
+<article>
+    <div class="image">
+
+        <a href="https://www.amazon.com.br/Hot-Wheels-Brinquedo-Desafio-crian%C3%A7as/dp/B0D7PT1JJJ?tag=gatry0b-20&" target="_blank"><img src="https://cdn.gatry.com/gatry-static/promocao/imagem/5adf4ebbc84987fd8d7dd0043c6d9129.jpg" title="Hot Wheels Action Pista De Brinquedo Desafio Turbina De Ação Para Crianças A Partir De 4 Anos" itemprop="image" alt=""></a>
+        <div class="option-other ml-auto d-block d-sm-none">
+            <a href="/usuarios/detalhe/Gabbriel" class="user-link"><img src="https://www.gravatar.com/avatar/1dbe597c7d1a73153e51a7e94a1c890b?d=http%3A%2F%2Fgatry.com%2Fimg%2Fuser_default.png" title="Gabriel" class="user-image rounded-circle" itemprop="image" onerror="this.src=&quot;/img/user_default.png&quot;" alt=""></a>
+            <p class="date" itemprop="startDate" title="28/10/2019 às 17:35">
+                55 minutos <span>atrás</span>            </p>
+        </div>
+    </div>
+
+    <div class="description">
+        <h3><a href="https://www.amazon.com.br/Hot-Wheels-Brinquedo-Desafio-crian%C3%A7as/dp/B0D7PT1JJJ?tag=gatry0b-20&amp;" target="_blank">Hot Wheels Action Pista De Brinquedo Desafio Turbina De Ação Para Crianças A Partir De 4 Anos</a></h3>
+
+        <p class="price">
+            R$ 164,70        </p>
+
+        
+        <div class="options d-flex">
+
+                        <div class="option-comment align-self-end">
+                <a href="/promocoes/279436/hot-wheels-action-pista-de-brinquedo-desafio-turbina-de-acao-para-criancas-a-partir-de-4-anos?comentarios" data-lightbox-comments="data-lightbox-comments">0 Comentário</a>            </div>
+            
+                        <div class="option-store align-self-end ml-3">
+                <a href="https://www.amazon.com.br/Hot-Wheels-Brinquedo-Desafio-crian%C3%A7as/dp/B0D7PT1JJJ?tag=gatry0b-20&" class="rounded" target="_blank"><span class="d-none d-sm-inline-block">Ir para</span> Amazon</a>            </div>
+            
+                        <div class="option-more align-self-end ml-3 -md-block">
+                <a href="/promocoes/279436/hot-wheels-action-pista-de-brinquedo-desafio-turbina-de-acao-para-criancas-a-partir-de-4-anos">...</a>            </div>
+            
+            <div class="option-other ml-auto d-none d-sm-block">
+                <a href="/usuarios/detalhe/Gabbriel" class="user-link"><img src="https://www.gravatar.com/avatar/1dbe597c7d1a73153e51a7e94a1c890b?d=http%3A%2F%2Fgatry.com%2Fimg%2Fuser_default.png" title="Gabriel" class="user-image rounded-circle" itemprop="image" onerror="this.src=&quot;/img/user_default.png&quot;" alt=""></a>
+                <p class="date" itemprop="startDate" title="10/07/2026 às 16:40 ">
+                    55 minutos <span>atrás</span>                </p>
+            </div>
+
+        </div>
+    </div>
+
+</article>
+<article>
+    <div class="image">
+
+        <a href="https://www.amazon.com.br/dp/B0DJMLBPS1?&linkCode=ll1&tag=gatry0b-20&linkId=ab4232b54e8515e68247a27c2dd16273&language=pt_BR&ref_=as_li_ss_tl" target="_blank"><img src="https://cdn.gatry.com/gatry-static/promocao/imagem/b80ba875c9145518ae1b8b0ce73543b3.jpg" title="Horizon Zero Dawn™ - Remastered Edition" itemprop="image" alt=""></a>
+        <div class="option-other ml-auto d-block d-sm-none">
+            <a href="/usuarios/detalhe/Gabbriel" class="user-link"><img src="https://www.gravatar.com/avatar/1dbe597c7d1a73153e51a7e94a1c890b?d=http%3A%2F%2Fgatry.com%2Fimg%2Fuser_default.png" title="Gabriel" class="user-image rounded-circle" itemprop="image" onerror="this.src=&quot;/img/user_default.png&quot;" alt=""></a>
+            <p class="date" itemprop="startDate" title="28/10/2019 às 17:35">
+                58 minutos <span>atrás</span>            </p>
+        </div>
+    </div>
+
+    <div class="description">
+        <h3><a href="https://www.amazon.com.br/dp/B0DJMLBPS1?&amp;linkCode=ll1&amp;tag=gatry0b-20&amp;linkId=ab4232b54e8515e68247a27c2dd16273&amp;language=pt_BR&amp;ref_=as_li_ss_tl" target="_blank">Horizon Zero Dawn™ - Remastered Edition</a></h3>
+
+        <p class="price">
+            R$ 99,90        </p>
+
+        
+        <div class="options d-flex">
+
+                        <div class="option-comment align-self-end">
+                <a href="/promocoes/279435/horizon-zero-dawn-remastered-edition-1?comentarios" data-lightbox-comments="data-lightbox-comments">0 Comentário</a>            </div>
+            
+                        <div class="option-store align-self-end ml-3">
+                <a href="https://www.amazon.com.br/dp/B0DJMLBPS1?&linkCode=ll1&tag=gatry0b-20&linkId=ab4232b54e8515e68247a27c2dd16273&language=pt_BR&ref_=as_li_ss_tl" class="rounded" target="_blank"><span class="d-none d-sm-inline-block">Ir para</span> Amazon</a>            </div>
+            
+                        <div class="option-more align-self-end ml-3 -md-block">
+                <a href="/promocoes/279435/horizon-zero-dawn-remastered-edition-1">...</a>            </div>
+            
+            <div class="option-other ml-auto d-none d-sm-block">
+                <a href="/usuarios/detalhe/Gabbriel" class="user-link"><img src="https://www.gravatar.com/avatar/1dbe597c7d1a73153e51a7e94a1c890b?d=http%3A%2F%2Fgatry.com%2Fimg%2Fuser_default.png" title="Gabriel" class="user-image rounded-circle" itemprop="image" onerror="this.src=&quot;/img/user_default.png&quot;" alt=""></a>
+                <p class="date" itemprop="startDate" title="10/07/2026 às 16:38 ">
+                    58 minutos <span>atrás</span>                </p>
+            </div>
+
+        </div>
+    </div>
+
+</article>
+<article>
+    <div class="image">
+
+        <a href="https://www.amazon.com.br/Ricca-Escova-Flex-Fast-Neon/dp/B0C4QYDC5Q?tag=gatry0b-20&th=1" target="_blank"><img src="https://cdn.gatry.com/gatry-static/promocao/imagem/bbc6dd54882387613991c758bab8ebcd.png" title="Ricca Escova Flex Fast Dry Neon" itemprop="image" alt=""></a>
+        <div class="option-other ml-auto d-block d-sm-none">
+            <a href="/usuarios/detalhe/Gabbriel" class="user-link"><img src="https://www.gravatar.com/avatar/1dbe597c7d1a73153e51a7e94a1c890b?d=http%3A%2F%2Fgatry.com%2Fimg%2Fuser_default.png" title="Gabriel" class="user-image rounded-circle" itemprop="image" onerror="this.src=&quot;/img/user_default.png&quot;" alt=""></a>
+            <p class="date" itemprop="startDate" title="28/10/2019 às 17:35">
+                1 hora <span>atrás</span>            </p>
+        </div>
+    </div>
+
+    <div class="description">
+        <h3><a href="https://www.amazon.com.br/Ricca-Escova-Flex-Fast-Neon/dp/B0C4QYDC5Q?tag=gatry0b-20&amp;th=1" target="_blank">Ricca Escova Flex Fast Dry Neon</a></h3>
+
+        <p class="price">
+            R$ 17,19        </p>
+
+        
+        <div class="options d-flex">
+
+                        <div class="option-comment align-self-end">
+                <a href="/promocoes/279434/ricca-escova-flex-fast-dry-neon-2?comentarios" data-lightbox-comments="data-lightbox-comments">0 Comentário</a>            </div>
+            
+                        <div class="option-store align-self-end ml-3">
+                <a href="https://www.amazon.com.br/Ricca-Escova-Flex-Fast-Neon/dp/B0C4QYDC5Q?tag=gatry0b-20&th=1" class="rounded" target="_blank"><span class="d-none d-sm-inline-block">Ir para</span> Amazon</a>            </div>
+            
+                        <div class="option-more align-self-end ml-3 -md-block">
+                <a href="/promocoes/279434/ricca-escova-flex-fast-dry-neon-2">...</a>            </div>
+            
+            <div class="option-other ml-auto d-none d-sm-block">
+                <a href="/usuarios/detalhe/Gabbriel" class="user-link"><img src="https://www.gravatar.com/avatar/1dbe597c7d1a73153e51a7e94a1c890b?d=http%3A%2F%2Fgatry.com%2Fimg%2Fuser_default.png" title="Gabriel" class="user-image rounded-circle" itemprop="image" onerror="this.src=&quot;/img/user_default.png&quot;" alt=""></a>
+                <p class="date" itemprop="startDate" title="10/07/2026 às 16:25 ">
+                    1 hora <span>atrás</span>                </p>
+            </div>
+
+        </div>
+    </div>
+
+</article>
+<article>
+    <div class="image">
+
+        <a href="https://www.amazon.com.br/PHILIPS-Ambilight-65PUG8929-78-Freesync/dp/B0FPBP6G49?tag=gatry0b-20&" target="_blank"><img src="https://cdn.gatry.com/gatry-static/promocao/imagem/4d61686f34282f489d6d48fdf7617018.png" title="PHILIPS, Smart TV, Ambilight THE ONE 65&quot; 4K 144 Hz, Titan OS, 65PUG8929/78" itemprop="image" alt=""></a>
+        <div class="option-other ml-auto d-block d-sm-none">
+            <a href="/usuarios/detalhe/Gabbriel" class="user-link"><img src="https://www.gravatar.com/avatar/1dbe597c7d1a73153e51a7e94a1c890b?d=http%3A%2F%2Fgatry.com%2Fimg%2Fuser_default.png" title="Gabriel" class="user-image rounded-circle" itemprop="image" onerror="this.src=&quot;/img/user_default.png&quot;" alt=""></a>
+            <p class="date" itemprop="startDate" title="28/10/2019 às 17:35">
+                1 hora <span>atrás</span>            </p>
+        </div>
+    </div>
+
+    <div class="description">
+        <h3><a href="https://www.amazon.com.br/PHILIPS-Ambilight-65PUG8929-78-Freesync/dp/B0FPBP6G49?tag=gatry0b-20&amp;" target="_blank">PHILIPS, Smart TV, Ambilight THE ONE 65&quot; 4K 144 Hz, Titan OS, 65PUG8929/78</a></h3>
+
+        <p class="price">
+            R$ 3.899,00        </p>
+
+                <p class="comment text-break">
+                        4 mil numa TV Tizen..... putz
+ED...        </p>
+        
+        <div class="options d-flex">
+
+                        <div class="option-comment align-self-end">
+                <a href="/promocoes/279433/philips-smart-tv-ambilight-the-one-65-4k-144-hz-titan-os-65pug8929-78?comentarios" data-lightbox-comments="data-lightbox-comments">5 Comentários</a>            </div>
+            
+                        <div class="option-store align-self-end ml-3">
+                <a href="https://www.amazon.com.br/PHILIPS-Ambilight-65PUG8929-78-Freesync/dp/B0FPBP6G49?tag=gatry0b-20&" class="rounded" target="_blank"><span class="d-none d-sm-inline-block">Ir para</span> Amazon</a>            </div>
+            
+                        <div class="option-more align-self-end ml-3 -md-block">
+                <a href="/promocoes/279433/philips-smart-tv-ambilight-the-one-65-4k-144-hz-titan-os-65pug8929-78">...</a>            </div>
+            
+            <div class="option-other ml-auto d-none d-sm-block">
+                <a href="/usuarios/detalhe/Gabbriel" class="user-link"><img src="https://www.gravatar.com/avatar/1dbe597c7d1a73153e51a7e94a1c890b?d=http%3A%2F%2Fgatry.com%2Fimg%2Fuser_default.png" title="Gabriel" class="user-image rounded-circle" itemprop="image" onerror="this.src=&quot;/img/user_default.png&quot;" alt=""></a>
+                <p class="date" itemprop="startDate" title="10/07/2026 às 16:23 ">
+                    1 hora <span>atrás</span>                </p>
+            </div>
+
+        </div>
+    </div>
+
+</article>
+<article>
+    <div class="image">
+
+        <a href="https://meli.la/114g2ao" target="_blank"><img src="https://cdn.gatry.com/gatry-static/promocao/imagem/3e51aca53be95407e5345d72ce4a376e.jpg" title="Power Bank Pro 20000mAH ELG PB200BK, Bateria Portátil Universal, Carga Rápida" itemprop="image" alt=""></a>
+        <div class="option-other ml-auto d-block d-sm-none">
+            <a href="/usuarios/detalhe/yank" class="user-link"><img src="https://www.gravatar.com/avatar/237b958fd3ac5047245c94a9fdad944f?d=http%3A%2F%2Fgatry.com%2Fimg%2Fuser_default.png" title="Yank" class="user-image rounded-circle" itemprop="image" onerror="this.src=&quot;/img/user_default.png&quot;" alt=""></a>
+            <p class="date" itemprop="startDate" title="28/10/2019 às 17:35">
+                1 hora <span>atrás</span>            </p>
+        </div>
+    </div>
+
+    <div class="description">
+        <h3><a href="https://meli.la/114g2ao" target="_blank">Power Bank Pro 20000mAH ELG PB200BK, Bateria Portátil Universal, Carga Rápida</a></h3>
+
+        <p class="price">
+            R$ 78,00        </p>
+
+                <p class="comment text-break">
+                        Cupom: SITE30        </p>
+        
+        <div class="options d-flex">
+
+                        <div class="option-comment align-self-end">
+                <a href="/promocoes/279432/power-bank-pro-20000mah-elg-pb200bk-bateria-portatil-universal-carga-rapida?comentarios" data-lightbox-comments="data-lightbox-comments">5 Comentários</a>            </div>
+            
+                        <div class="option-store align-self-end ml-3">
+                <a href="https://meli.la/114g2ao" class="rounded" target="_blank"><span class="d-none d-sm-inline-block">Ir para</span> Mercadolivre</a>            </div>
+            
+                        <div class="option-more align-self-end ml-3 -md-block">
+                <a href="/promocoes/279432/power-bank-pro-20000mah-elg-pb200bk-bateria-portatil-universal-carga-rapida">...</a>            </div>
+            
+            <div class="option-other ml-auto d-none d-sm-block">
+                <a href="/usuarios/detalhe/yank" class="user-link"><img src="https://www.gravatar.com/avatar/237b958fd3ac5047245c94a9fdad944f?d=http%3A%2F%2Fgatry.com%2Fimg%2Fuser_default.png" title="Yank" class="user-image rounded-circle" itemprop="image" onerror="this.src=&quot;/img/user_default.png&quot;" alt=""></a>
+                <p class="date" itemprop="startDate" title="10/07/2026 às 16:07 ">
+                    1 hora <span>atrás</span>                </p>
+            </div>
+
+        </div>
+    </div>
+
+</article>
+<article>
+    <div class="image">
+
+        <a href="https://link.amazon/B09y3kAFC" target="_blank"><img src="https://cdn.gatry.com/gatry-static/promocao/imagem/ae31003e4e422987f8853df24614d18a.jpg" title="Nude Leite De Aveia Original Orgânico 1l" itemprop="image" alt=""></a>
+        <div class="option-other ml-auto d-block d-sm-none">
+            <a href="/usuarios/detalhe/yank" class="user-link"><img src="https://www.gravatar.com/avatar/237b958fd3ac5047245c94a9fdad944f?d=http%3A%2F%2Fgatry.com%2Fimg%2Fuser_default.png" title="Yank" class="user-image rounded-circle" itemprop="image" onerror="this.src=&quot;/img/user_default.png&quot;" alt=""></a>
+            <p class="date" itemprop="startDate" title="28/10/2019 às 17:35">
+                1 hora <span>atrás</span>            </p>
+        </div>
+    </div>
+
+    <div class="description">
+        <h3><a href="https://link.amazon/B09y3kAFC" target="_blank">Nude Leite De Aveia Original Orgânico 1l</a></h3>
+
+        <p class="price">
+            R$ 14,99        </p>
+
+        
+        <div class="options d-flex">
+
+                        <div class="option-comment align-self-end">
+                <a href="/promocoes/279431/nude-leite-de-aveia-original-organico-1l?comentarios" data-lightbox-comments="data-lightbox-comments">0 Comentário</a>            </div>
+            
+                        <div class="option-store align-self-end ml-3">
+                <a href="https://link.amazon/B09y3kAFC" class="rounded" target="_blank"><span class="d-none d-sm-inline-block">Ir para</span> Amazon</a>            </div>
+            
+                        <div class="option-more align-self-end ml-3 -md-block">
+                <a href="/promocoes/279431/nude-leite-de-aveia-original-organico-1l">...</a>            </div>
+            
+            <div class="option-other ml-auto d-none d-sm-block">
+                <a href="/usuarios/detalhe/yank" class="user-link"><img src="https://www.gravatar.com/avatar/237b958fd3ac5047245c94a9fdad944f?d=http%3A%2F%2Fgatry.com%2Fimg%2Fuser_default.png" title="Yank" class="user-image rounded-circle" itemprop="image" onerror="this.src=&quot;/img/user_default.png&quot;" alt=""></a>
+                <p class="date" itemprop="startDate" title="10/07/2026 às 16:05 ">
+                    1 hora <span>atrás</span>                </p>
+            </div>
+
+        </div>
+    </div>
+
+</article>
+<article>
+    <div class="image">
+
+        <a href="https://meli.la/31ozdfe" target="_blank"><img src="https://cdn.gatry.com/gatry-static/promocao/imagem/7b3fe62db20044cb0eea2255157b6eea.jpg" title="Forno Elétrico Mondial Pratic Cook 6l Fr-09 Cor Preto" itemprop="image" alt=""></a>
+        <div class="option-other ml-auto d-block d-sm-none">
+            <a href="/usuarios/detalhe/yank" class="user-link"><img src="https://www.gravatar.com/avatar/237b958fd3ac5047245c94a9fdad944f?d=http%3A%2F%2Fgatry.com%2Fimg%2Fuser_default.png" title="Yank" class="user-image rounded-circle" itemprop="image" onerror="this.src=&quot;/img/user_default.png&quot;" alt=""></a>
+            <p class="date" itemprop="startDate" title="28/10/2019 às 17:35">
+                1 hora <span>atrás</span>            </p>
+        </div>
+    </div>
+
+    <div class="description">
+        <h3><a href="https://meli.la/31ozdfe" target="_blank">Forno Elétrico Mondial Pratic Cook 6l Fr-09 Cor Preto</a></h3>
+
+        <p class="price">
+            R$ 167,00        </p>
+
+        
+        <div class="options d-flex">
+
+                        <div class="option-comment align-self-end">
+                <a href="/promocoes/279430/forno-eletrico-mondial-pratic-cook-6l-fr-09-cor-preto?comentarios" data-lightbox-comments="data-lightbox-comments">0 Comentário</a>            </div>
+            
+                        <div class="option-store align-self-end ml-3">
+                <a href="https://meli.la/31ozdfe" class="rounded" target="_blank"><span class="d-none d-sm-inline-block">Ir para</span> Mercadolivre</a>            </div>
+            
+                        <div class="option-more align-self-end ml-3 -md-block">
+                <a href="/promocoes/279430/forno-eletrico-mondial-pratic-cook-6l-fr-09-cor-preto">...</a>            </div>
+            
+            <div class="option-other ml-auto d-none d-sm-block">
+                <a href="/usuarios/detalhe/yank" class="user-link"><img src="https://www.gravatar.com/avatar/237b958fd3ac5047245c94a9fdad944f?d=http%3A%2F%2Fgatry.com%2Fimg%2Fuser_default.png" title="Yank" class="user-image rounded-circle" itemprop="image" onerror="this.src=&quot;/img/user_default.png&quot;" alt=""></a>
+                <p class="date" itemprop="startDate" title="10/07/2026 às 15:39 ">
+                    1 hora <span>atrás</span>                </p>
+            </div>
+
+        </div>
+    </div>
+
+</article>
+<article>
+    <div class="image">
+
+        <a href="https://meli.la/287dGwu" target="_blank"><img src="https://cdn.gatry.com/gatry-static/promocao/imagem/975fceb2e3a945631077e0a775921814.jpg" title="Mala De Viagem 23kg Média Londres Swiss Move Preto" itemprop="image" alt=""></a>
+        <div class="option-other ml-auto d-block d-sm-none">
+            <a href="/usuarios/detalhe/yank" class="user-link"><img src="https://www.gravatar.com/avatar/237b958fd3ac5047245c94a9fdad944f?d=http%3A%2F%2Fgatry.com%2Fimg%2Fuser_default.png" title="Yank" class="user-image rounded-circle" itemprop="image" onerror="this.src=&quot;/img/user_default.png&quot;" alt=""></a>
+            <p class="date" itemprop="startDate" title="28/10/2019 às 17:35">
+                2 horas <span>atrás</span>            </p>
+        </div>
+    </div>
+
+    <div class="description">
+        <h3><a href="https://meli.la/287dGwu" target="_blank">Mala De Viagem 23kg Média Londres Swiss Move Preto</a></h3>
+
+        <p class="price">
+            R$ 176,03        </p>
+
+                <p class="comment text-break">
+                        Cupom: MODASEMPRE        </p>
+        
+        <div class="options d-flex">
+
+                        <div class="option-comment align-self-end">
+                <a href="/promocoes/279428/mala-de-viagem-23kg-media-londres-swiss-move-preto?comentarios" data-lightbox-comments="data-lightbox-comments">2 Comentários</a>            </div>
+            
+                        <div class="option-store align-self-end ml-3">
+                <a href="https://meli.la/287dGwu" class="rounded" target="_blank"><span class="d-none d-sm-inline-block">Ir para</span> Mercadolivre</a>            </div>
+            
+                        <div class="option-more align-self-end ml-3 -md-block">
+                <a href="/promocoes/279428/mala-de-viagem-23kg-media-londres-swiss-move-preto">...</a>            </div>
+            
+            <div class="option-other ml-auto d-none d-sm-block">
+                <a href="/usuarios/detalhe/yank" class="user-link"><img src="https://www.gravatar.com/avatar/237b958fd3ac5047245c94a9fdad944f?d=http%3A%2F%2Fgatry.com%2Fimg%2Fuser_default.png" title="Yank" class="user-image rounded-circle" itemprop="image" onerror="this.src=&quot;/img/user_default.png&quot;" alt=""></a>
+                <p class="date" itemprop="startDate" title="10/07/2026 às 15:26 ">
+                    2 horas <span>atrás</span>                </p>
+            </div>
+
+        </div>
+    </div>
+
+</article>
+<article>
+    <div class="image">
+
+        <a href="https://meli.la/1Kw3tBP" target="_blank"><img src="https://cdn.gatry.com/gatry-static/promocao/imagem/816955bf69abb8fb76e950c715d913d7.jpg" title="Camiseta Básica Tech Daily Insider" itemprop="image" alt=""></a>
+        <div class="option-other ml-auto d-block d-sm-none">
+            <a href="/usuarios/detalhe/yank" class="user-link"><img src="https://www.gravatar.com/avatar/237b958fd3ac5047245c94a9fdad944f?d=http%3A%2F%2Fgatry.com%2Fimg%2Fuser_default.png" title="Yank" class="user-image rounded-circle" itemprop="image" onerror="this.src=&quot;/img/user_default.png&quot;" alt=""></a>
+            <p class="date" itemprop="startDate" title="28/10/2019 às 17:35">
+                2 horas <span>atrás</span>            </p>
+        </div>
+    </div>
+
+    <div class="description">
+        <h3><a href="https://meli.la/1Kw3tBP" target="_blank">Camiseta Básica Tech Daily Insider</a></h3>
+
+        <p class="price">
+            R$ 56,00        </p>
+
+                <p class="comment text-break">
+                        Cupom: MODAEBELEZA15        </p>
+        
+        <div class="options d-flex">
+
+                        <div class="option-comment align-self-end">
+                <a href="/promocoes/279429/camiseta-basica-tech-daily-insider?comentarios" data-lightbox-comments="data-lightbox-comments">1 Comentário</a>            </div>
+            
+                        <div class="option-store align-self-end ml-3">
+                <a href="https://meli.la/1Kw3tBP" class="rounded" target="_blank"><span class="d-none d-sm-inline-block">Ir para</span> Mercadolivre</a>            </div>
+            
+                        <div class="option-more align-self-end ml-3 -md-block">
+                <a href="/promocoes/279429/camiseta-basica-tech-daily-insider">...</a>            </div>
+            
+            <div class="option-other ml-auto d-none d-sm-block">
+                <a href="/usuarios/detalhe/yank" class="user-link"><img src="https://www.gravatar.com/avatar/237b958fd3ac5047245c94a9fdad944f?d=http%3A%2F%2Fgatry.com%2Fimg%2Fuser_default.png" title="Yank" class="user-image rounded-circle" itemprop="image" onerror="this.src=&quot;/img/user_default.png&quot;" alt=""></a>
+                <p class="date" itemprop="startDate" title="10/07/2026 às 15:26 ">
+                    2 horas <span>atrás</span>                </p>
+            </div>
+
+        </div>
+    </div>
+
+</article></section>
+
+<div class="load-more">
+	<button d
+		ata-url="/"
+		data-finish-text="Todas as promoções foram exibidas"
+		data-append-local=".promotions"
+		data-current-page="1"
+		data-exclude=""
+		>
+		Carregar mais...
+	</button>
+</div>
+
+    </div>
+
+    
+<div id="warning-1" class="warnings-lightbox" style="display: none;">
+	<h3>Atenção!</h3>
+
+	<p class="mb-0">Você precisa estar logado para compartilhar promoções e avalições!</p>
+</div>
+
+
+<div id="warning-2" class="warnings-lightbox" style="display: none;">
+	<h3>Atenção!</h3>
+
+	<p class="mb-0">Você precisa estar logado para comentar ou responder!</p>
+</div>
+
+    <div class="scroll-to-top">
+        <img src="/img/up.png?1772475923" alt="">    </div>
+
+    <footer>
+        <div class="container">
+            <a href="#">GATRY?</a>
+            <a href="/termos">TERMOS</a>
+            <a href="mailto:guilherme@gatry.com">CONTATO</a>
+            <a href="https://www.instagram.com/gatry_promocoes/" target="_blank">INSTAGRAM</a>
+            <span class="d-block mb-2">Gatry © 2026</span>
+        </div>
+    </footer>
+
+</body>
+</html>

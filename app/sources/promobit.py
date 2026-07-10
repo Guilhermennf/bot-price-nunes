@@ -126,6 +126,16 @@ def resolve_store_url(deal: Deal) -> str | None:
         if store_id is not None and looks_like_product_url(url, store_id):
             return url
         log.debug("resolved to non-product/non-store url, rejecting: %s", url[:90])
+
+    # Mercado Livre's meli.la links land on a generic JS-rendered page that
+    # plain httpx can't resolve — a headless browser can (see ml_browser.py).
+    meli = next((c for c in candidates if "meli.la/" in c), None)
+    if meli:
+        from app.sources.ml_browser import resolve_ml_landing
+        resolved = resolve_ml_landing(meli, deal.title)
+        if resolved:
+            return resolved
+
     log.info("no valid store URL for offer %s (%s)", deal.raw_id, deal.store)
     return None
 
