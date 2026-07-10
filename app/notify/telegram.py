@@ -6,15 +6,12 @@ CLI smoke test:  python -m app.notify.telegram "test message"
 from __future__ import annotations
 
 import html
-import logging
 import sys
 
 import httpx
 
 from app.config import get_settings
 from app.models import Deal
-
-log = logging.getLogger(__name__)
 
 _API = "https://api.telegram.org/bot{token}/sendMessage"
 
@@ -35,27 +32,6 @@ def send_message(text: str, disable_preview: bool = False) -> dict:
     )
     resp.raise_for_status()
     return resp.json()
-
-
-def shorten_url(url: str) -> str:
-    """Shorten a URL via TinyURL's free, keyless API.
-
-    Fails soft: any error (network, non-2xx, empty/odd body) returns the
-    original URL unchanged rather than blocking the post.
-    """
-    try:
-        resp = httpx.get(
-            "https://tinyurl.com/api-create.php",
-            params={"url": url},
-            timeout=10,
-        )
-        resp.raise_for_status()
-        short = resp.text.strip()
-        if short.startswith("http"):
-            return short
-    except Exception as exc:
-        log.info("shorten_url failed, using original link: %s", exc)
-    return url
 
 
 def _brl(value: float) -> str:
@@ -103,16 +79,14 @@ def _format_deal(deal: Deal, link: str | None = None) -> str:
     if facts:
         sections.append("\n".join(facts))
 
-    sections.append(f'🛒 <a href="{html.escape(link)}">{html.escape(link)}</a>')
+    sections.append(f'🛒 <a href="{html.escape(link)}">COMPRAR AGORA</a>')
 
     return "\n\n".join(sections)
 
 
 def send_deal(deal: Deal) -> dict:
-    """Post a formatted deal with a shortened store link (link preview ON so
-    the product image still shows)."""
-    short_link = shorten_url(deal.url)
-    return send_message(_format_deal(deal, link=short_link), disable_preview=False)
+    """Post a formatted deal (link preview ON so the product image shows)."""
+    return send_message(_format_deal(deal), disable_preview=False)
 
 
 if __name__ == "__main__":

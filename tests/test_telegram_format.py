@@ -1,7 +1,5 @@
 from app.models import Deal
-from app.notify.telegram import _format_deal, _short_title, shorten_url
-
-from tests.conftest import FakeResponse
+from app.notify.telegram import _format_deal, _short_title
 
 
 def make_deal(**kw):
@@ -63,10 +61,15 @@ def test_no_coupon_line_when_absent():
     assert "Cupom" not in msg
 
 
-def test_link_param_used_over_deal_url():
-    msg = _format_deal(make_deal(), link="https://tinyurl.com/abc123")
-    assert "https://tinyurl.com/abc123" in msg
-    assert "amazon.com.br" not in msg
+def test_link_hidden_behind_comprar_agora_label():
+    msg = _format_deal(make_deal())
+    assert '<a href="https://www.amazon.com.br/dp/B1">COMPRAR AGORA</a>' in msg
+
+
+def test_link_param_overrides_deal_url_but_label_stays():
+    msg = _format_deal(make_deal(), link="https://www.amazon.com.br/dp/OTHER")
+    assert '<a href="https://www.amazon.com.br/dp/OTHER">COMPRAR AGORA</a>' in msg
+    assert "/dp/B1" not in msg
 
 
 # --- short title: AI-provided, capped at 6 words, escaped ---
@@ -86,30 +89,3 @@ def test_short_title_falls_back_to_truncated_raw_title():
 def test_short_title_html_escaped():
     msg = _format_deal(make_deal(short_title='TV 50" <Promo> & Cia'))
     assert "&lt;Promo&gt;" in msg and "&amp;" in msg
-
-
-# --- shorten_url: fail-soft link shortening ---
-
-def test_shorten_url_success(monkeypatch):
-    monkeypatch.setattr(
-        "httpx.get",
-        lambda url, params, timeout: FakeResponse(text="https://tinyurl.com/abc123"),
-    )
-    assert shorten_url("https://www.amazon.com.br/dp/B1") == "https://tinyurl.com/abc123"
-
-
-def test_shorten_url_falls_back_on_error(monkeypatch):
-    def boom(url, params, timeout):
-        raise RuntimeError("network down")
-
-    monkeypatch.setattr("httpx.get", boom)
-    original = "https://www.amazon.com.br/dp/B1"
-    assert shorten_url(original) == original
-
-
-def test_shorten_url_falls_back_on_bad_body(monkeypatch):
-    monkeypatch.setattr(
-        "httpx.get", lambda url, params, timeout: FakeResponse(text="Error")
-    )
-    original = "https://www.amazon.com.br/dp/B1"
-    assert shorten_url(original) == original
