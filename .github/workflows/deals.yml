@@ -19,7 +19,7 @@ jobs:
     runs-on: ubuntu-latest
     timeout-minutes: 15
     steps:
-      - uses: actions/checkout@v6
+      - uses: actions/checkout@v7
 
       # Scheduled workflows are auto-disabled after 60 days without repo
       # activity; re-enabling via the API resets that countdown.
