@@ -1,4 +1,4 @@
 -r requirements.txt
-pytest>=8.0
-ruff>=0.6
-mypy>=1.11
+pytest>=9.1.1
+ruff>=0.15.21
+mypy>=2.2.0
