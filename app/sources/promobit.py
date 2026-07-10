@@ -17,7 +17,7 @@ import re
 
 from app.models import Deal, normalize_url
 from app.sources.base import Source, get, iter_dicts, parse_next_data
-from app.stores import is_dead_redirect, store_from_url
+from app.stores import is_dead_redirect, looks_like_product_url, store_from_url
 
 log = logging.getLogger(__name__)
 
@@ -95,8 +95,11 @@ def resolve_store_url(deal: Deal) -> str | None:
     The feed payload has no outbound link, but `/Redirect/to/<offerId>/` embeds
     the affiliate link(s) (linksynergy/awin/...), which 30x-chain to the store.
     Tries every candidate link on the page and only accepts a final URL whose
-    host is a known store (app/stores.py) — dead affiliate links ("bad
-    merchant" error pages) and chains that bounce back to Promobit return None.
+    host is a known store AND whose path actually names a product
+    (app/stores.py) — dead affiliate links ("bad merchant" error pages),
+    chains that bounce back to Promobit, and generic non-product landing
+    pages (e.g. ML's `meli.la` short links resolve to a client-JS-driven
+    "/social/promobit" recommendations page, not the item) all return None.
     Call only for deals about to be posted (a few requests each).
     """
     if not deal.raw_id or not deal.raw_id.isdigit():
@@ -119,9 +122,10 @@ def resolve_store_url(deal: Deal) -> str | None:
             continue
         if is_dead_redirect(url):
             continue
-        if store_from_url(url) is not None:
+        store_id = store_from_url(url)
+        if store_id is not None and looks_like_product_url(url, store_id):
             return url
-        log.debug("resolved to non-store host, rejecting: %s", url[:80])
+        log.debug("resolved to non-product/non-store url, rejecting: %s", url[:90])
     log.info("no valid store URL for offer %s (%s)", deal.raw_id, deal.store)
     return None
 

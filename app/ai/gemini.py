@@ -40,8 +40,9 @@ Responda em JSON com:
 - category (string): categoria curta do produto (ex: "smartphone", "periférico",
   "TV", "console", "não-tech")
 - reason (string, curto): justificativa objetiva
-- copy (string): texto persuasivo em PT-BR para o canal, com emojis, 1-3 linhas,
-  destacando o desconto e o cupom se houver. NÃO invente preços nem repita o link.
+- short_title (string): nome do produto em NO MÁXIMO 6 palavras, identificando
+  marca/modelo (ex: "iPhone 17 Pro 512GB", "Fone JBL Tune 510BT"). Sem emojis,
+  sem preço, sem frase de efeito — só o nome enxuto do produto.
 """
 
 
@@ -50,7 +51,7 @@ class Evaluation:
     legit: bool
     score: int
     reason: str
-    copy: str
+    short_title: str
     is_tech: bool = True
     category: str = ""
 
@@ -128,7 +129,7 @@ def evaluate(deal: Deal) -> Evaluation | None:
         legit=bool(data.get("legit", False)),
         score=int(data.get("score", 0)),
         reason=str(data.get("reason", "")),
-        copy=str(data.get("copy", "")),
+        short_title=str(data.get("short_title", "")),
         is_tech=bool(data.get("is_tech", True)),
         category=str(data.get("category", "")),
     )

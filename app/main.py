@@ -177,7 +177,7 @@ def run(dry_run: bool = False) -> None:
             log.info("skip (no AI eval): %s", deal.title)
             continue
         deal.score = evaluation.score
-        deal.copy = evaluation.copy
+        deal.short_title = evaluation.short_title
         deal.reason = evaluation.reason
         deal.category = evaluation.category or None
         if s.tech_only and not evaluation.is_tech:
@@ -237,7 +237,7 @@ def _preview(deal: Deal) -> str:
         f"min R$ {deal.hist_min})\n"
         f"score:    {deal.score} — {deal.reason}\n"
         f"coupon:   {deal.coupon}\n"
-        f"copy:     {deal.copy}\n"
+        f"short:    {deal.short_title}\n"
         f"url:      {deal.url}"
     )
 

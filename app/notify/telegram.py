@@ -50,21 +50,42 @@ def _hashtag(category: str | None) -> str | None:
     return f"#{slug}" if slug else None
 
 
+def _brl(value: float) -> str:
+    return f"{value:,.2f}".replace(",", "\0").replace(".", ",").replace("\0", ".")
+
+
+def _short_title(deal: Deal) -> str:
+    """The AI-written ≤6-word product name, or a truncated fallback."""
+    title = (deal.short_title or "").strip() or deal.title
+    return " ".join(title.split()[:6])
+
+
+def _price_line(deal: Deal) -> str | None:
+    """'De X por Y (−N%)' when there's a real discount, else just the price.
+
+    The "de" reference is reconstructed from discount_pct rather than
+    list_price, since discount_pct is always populated consistently (against
+    list_price OR our own tracked median — see validation/price_history.py)
+    while list_price often isn't set by the source at all.
+    """
+    if deal.price is None:
+        return None
+    if deal.discount_pct and 0 < deal.discount_pct < 100:
+        from_price = deal.price / (1 - deal.discount_pct / 100)
+        return (f"De R$ {_brl(from_price)} por <b>R$ {_brl(deal.price)}</b>"
+                f"  (−{deal.discount_pct:.0f}%)")
+    return f"<b>R$ {_brl(deal.price)}</b>"
+
+
 def _format_deal(deal: Deal) -> str:
-    """Branded channel message: header / AI copy / facts / footer."""
+    """Branded channel message: título curto / preço / cupom / loja / link."""
     lines: list[str] = [f"⚡ <b>{CHANNEL_NAME}</b>", ""]
 
-    if deal.copy:
-        lines.append(deal.copy.strip())
-    else:
-        lines.append(f"🔥 <b>{html.escape(deal.title)}</b>")
+    lines.append(f"🔥 <b>{html.escape(_short_title(deal))}</b>")
     lines.append("")
 
-    if deal.price is not None:
-        brl = f"{deal.price:,.2f}".replace(",", "\0").replace(".", ",").replace("\0", ".")
-        price_line = f"💰 <b>R$ {brl}</b>"
-        if deal.discount_pct:
-            price_line += f"  (−{deal.discount_pct:.0f}%)"
+    price_line = _price_line(deal)
+    if price_line:
         lines.append(price_line)
 
     if deal.coupon:

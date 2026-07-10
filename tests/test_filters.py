@@ -1,6 +1,6 @@
 from app.filters import looks_tech, passes
 from app.models import Deal
-from app.stores import identify, is_dead_redirect, store_from_url
+from app.stores import identify, is_dead_redirect, looks_like_product_url, store_from_url
 
 
 def make_deal(title="Notebook Gamer", store="Amazon",
@@ -54,6 +54,40 @@ def test_dead_redirect_hosts():
     assert is_dead_redirect("https://click.linksynergy.com/fs-bin/click?id=x")
     assert is_dead_redirect("https://www.promobit.com.br/promocoes/")
     assert not is_dead_redirect("https://www.amazon.com.br/dp/B1")
+
+
+# --- product-url validation (regression: meli.la -> generic landing page bug) ---
+
+def test_ml_generic_landing_page_rejected():
+    # The exact bug: meli.la short links resolve here, not to a product.
+    assert not looks_like_product_url(
+        "https://www.mercadolivre.com.br/social/promobit?forceInApp=true"
+    )
+
+
+def test_ml_real_product_url_accepted():
+    assert looks_like_product_url(
+        "https://www.mercadolivre.com.br/kit-10-potes-vidro/p/MLB53222545"
+    )
+    assert looks_like_product_url(
+        "https://produto.mercadolivre.com.br/MLB-1234567890-produto"
+    )
+
+
+def test_amazon_product_url_accepted():
+    assert looks_like_product_url("https://www.amazon.com.br/dp/B08QV3XK76")
+    assert not looks_like_product_url("https://www.amazon.com.br/gp/help/customer")
+
+
+def test_aliexpress_product_url_accepted():
+    assert looks_like_product_url(
+        "https://pt.aliexpress.com/item/1005007115982098.html"
+    )
+    assert not looks_like_product_url("https://pt.aliexpress.com/category/100/phones")
+
+
+def test_unknown_store_rejected():
+    assert not looks_like_product_url("https://www.kabum.com.br/p/1")
 
 
 # --- combined gate ---

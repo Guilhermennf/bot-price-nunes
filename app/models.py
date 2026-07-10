@@ -52,7 +52,7 @@ class Deal:
 
     Fields are progressively filled: sources set the basics, the direct
     price-confirm step may correct ``price``, validation sets ``discount_pct``,
-    and the AI step sets ``score`` / ``copy``.
+    and the AI step sets ``score`` / ``short_title``.
     """
 
     title: str
@@ -69,7 +69,7 @@ class Deal:
     hist_min: float | None = None
     hist_median: float | None = None
     score: int | None = None
-    copy: str | None = None
+    short_title: str | None = None
     reason: str | None = None
     category: str | None = None  # from Gemini, e.g. "smartphone"
 
