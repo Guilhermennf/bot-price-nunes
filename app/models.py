@@ -71,6 +71,7 @@ class Deal:
     score: int | None = None
     copy: str | None = None
     reason: str | None = None
+    category: str | None = None  # from Gemini, e.g. "smartphone"
 
     key: str = field(default="", init=False)
 

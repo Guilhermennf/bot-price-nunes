@@ -9,8 +9,12 @@ create table if not exists deals (
     price       numeric,
     coupon      text,
     score       int,
+    category    text,
     posted_at   timestamptz not null default now()
 );
+
+-- Migration for pre-v3 databases (idempotent):
+alter table deals add column if not exists category text;
 
 -- One product may legitimately be posted more than once over time (when it
 -- gets cheaper), so url_key is indexed but NOT unique.

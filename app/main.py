@@ -14,13 +14,13 @@ import logging
 import random
 import sys
 import time
-from datetime import datetime, timezone
+from datetime import UTC, datetime
 from urllib.parse import urlsplit
 
 # Windows consoles default to cp1252, which chokes on emoji in deal copy.
 if sys.stdout and hasattr(sys.stdout, "reconfigure"):
     sys.stdout.reconfigure(encoding="utf-8", errors="replace")
-    sys.stderr.reconfigure(encoding="utf-8", errors="replace")
+    sys.stderr.reconfigure(encoding="utf-8", errors="replace")  # type: ignore[union-attr]
 
 from app import affiliate, filters
 from app.ai import gemini
@@ -72,7 +72,7 @@ def mark_posted(deal: Deal) -> None:
         return
     try:
         db.record_posted_deal(deal.key, deal.title, deal.store, deal.price,
-                              deal.coupon, deal.score)
+                              deal.coupon, deal.score, deal.category)
     except Exception as exc:
         log.warning("record_posted_deal failed: %s", exc)
 
@@ -124,7 +124,7 @@ def _priority(deal: Deal) -> float:
 
 def run(dry_run: bool = False) -> None:
     s = get_settings()
-    started_at = datetime.now(timezone.utc).isoformat()
+    started_at = datetime.now(UTC).isoformat()
 
     all_deals = gather()
     sources_mix: dict[str, int] = {}
@@ -179,6 +179,7 @@ def run(dry_run: bool = False) -> None:
         deal.score = evaluation.score
         deal.copy = evaluation.copy
         deal.reason = evaluation.reason
+        deal.category = evaluation.category or None
         if s.tech_only and not evaluation.is_tech:
             counters["skipped_tech"] += 1
             log.info("skip (not tech, AI: %s): %s", evaluation.category, deal.title)
@@ -241,6 +242,20 @@ def _preview(deal: Deal) -> str:
     )
 
 
+def _init_sentry() -> None:
+    """Error tracking, active only when SENTRY_DSN is set (no-op otherwise)."""
+    import os
+    dsn = os.environ.get("SENTRY_DSN", "").strip()
+    if not dsn:
+        return
+    try:
+        import sentry_sdk
+        sentry_sdk.init(dsn=dsn, traces_sample_rate=0, environment="production")
+        log.info("sentry enabled")
+    except Exception as exc:
+        log.warning("sentry init failed: %s", exc)
+
+
 def main() -> None:
     parser = argparse.ArgumentParser(description="Brazilian deal bot pipeline")
     parser.add_argument("--dry-run", action="store_true",
@@ -252,6 +267,7 @@ def main() -> None:
         level=logging.DEBUG if args.verbose else logging.INFO,
         format="%(asctime)s %(levelname)s %(name)s: %(message)s",
     )
+    _init_sentry()
     run(dry_run=args.dry_run)
 
 

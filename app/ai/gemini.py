@@ -104,7 +104,7 @@ def evaluate(deal: Deal) -> Evaluation | None:
                 resp = client.models.generate_content(
                     model=model, contents=prompt, config=config,
                 )
-                data = json.loads(resp.text)
+                data = json.loads(resp.text or "")
                 break
             except Exception as exc:
                 last_exc = exc

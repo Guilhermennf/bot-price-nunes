@@ -4,7 +4,8 @@ from __future__ import annotations
 
 import json
 import re
-from typing import Any, Iterator, Protocol
+from collections.abc import Iterator
+from typing import Any, Protocol
 
 import httpx
 from selectolax.parser import HTMLParser

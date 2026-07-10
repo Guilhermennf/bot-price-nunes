@@ -34,16 +34,35 @@ def send_message(text: str, disable_preview: bool = False) -> dict:
     return resp.json()
 
 
+CHANNEL_NAME = "NUNES TECH PROMOS"
+CHANNEL_LINK = "t.me/nunestechpromos"
+
+
+def _hashtag(category: str | None) -> str | None:
+    """Turn Gemini's category into a channel hashtag: 'placa de vídeo' -> #placadevideo."""
+    if not category:
+        return None
+    import re
+    import unicodedata
+    folded = unicodedata.normalize("NFKD", category.lower())
+    folded = "".join(c for c in folded if not unicodedata.combining(c))
+    slug = re.sub(r"[^a-z0-9]", "", folded)
+    return f"#{slug}" if slug else None
+
+
 def _format_deal(deal: Deal) -> str:
-    """Build the HTML message body from the (AI-written) copy + facts."""
-    lines: list[str] = []
+    """Branded channel message: header / AI copy / facts / footer."""
+    lines: list[str] = [f"⚡ <b>{CHANNEL_NAME}</b>", ""]
+
     if deal.copy:
         lines.append(deal.copy.strip())
     else:
         lines.append(f"🔥 <b>{html.escape(deal.title)}</b>")
+    lines.append("")
 
     if deal.price is not None:
-        price_line = f"💰 <b>R$ {deal.price:.2f}</b>"
+        brl = f"{deal.price:,.2f}".replace(",", "\0").replace(".", ",").replace("\0", ".")
+        price_line = f"💰 <b>R$ {brl}</b>"
         if deal.discount_pct:
             price_line += f"  (−{deal.discount_pct:.0f}%)"
         lines.append(price_line)
@@ -54,7 +73,10 @@ def _format_deal(deal: Deal) -> str:
     if deal.store:
         lines.append(f"🏬 {html.escape(deal.store)}")
 
-    lines.append(f'🔗 <a href="{html.escape(deal.url)}">Ver oferta</a>')
+    lines.append(f'🛒 <a href="{html.escape(deal.url)}">COMPRAR AGORA</a>')
+
+    footer = [_hashtag(deal.category), f"➡️ {CHANNEL_LINK}"]
+    lines.extend(["", " · ".join(p for p in footer if p)])
     return "\n".join(lines)
 
 

@@ -1,0 +1,11 @@
+services:
+  bot:
+    build: .
+    env_file: .env
+    # one pipeline run then exit — mirror of the GitHub Actions job
+    command: []
+
+  bot-dry:
+    build: .
+    env_file: .env
+    command: ["--dry-run"]

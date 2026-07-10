@@ -7,7 +7,8 @@ from __future__ import annotations
 
 import statistics
 from dataclasses import dataclass
-from datetime import datetime, timedelta, timezone
+from datetime import UTC, datetime, timedelta
+from typing import Any, cast
 
 from supabase import Client, create_client
 
@@ -35,7 +36,7 @@ def get_client() -> Client:
 
 
 def _iso_days_ago(days: int) -> str:
-    return (datetime.now(timezone.utc) - timedelta(days=days)).isoformat()
+    return (datetime.now(UTC) - timedelta(days=days)).isoformat()
 
 
 def record_price(product_key: str, price: float) -> None:
@@ -55,7 +56,8 @@ def get_price_stats(product_key: str, window_days: int) -> PriceStats:
         .gte("captured_at", _iso_days_ago(window_days))
         .execute()
     )
-    prices = [float(row["price"]) for row in (resp.data or []) if row.get("price") is not None]
+    rows = cast(list[dict[str, Any]], resp.data or [])
+    prices = [float(row["price"]) for row in rows if row.get("price") is not None]
     if not prices:
         return PriceStats(count=0, minimum=None, median=None)
     return PriceStats(count=len(prices), minimum=min(prices), median=statistics.median(prices))
@@ -76,19 +78,19 @@ def was_recently_posted(url_key: str, price: float, cooldown_days: int) -> bool:
         .limit(1)
         .execute()
     )
-    rows = resp.data or []
+    rows = cast(list[dict[str, Any]], resp.data or [])
     if not rows:
         return False
     last_price = rows[0].get("price")
     if last_price is None:
         return True
     # Suppress unless the new price is meaningfully lower (>1% cheaper).
-    return price >= float(last_price) * 0.99
+    return price >= float(cast(float, last_price)) * 0.99
 
 
 def record_posted_deal(
     url_key: str, title: str, store: str, price: float | None,
-    coupon: str | None, score: int | None,
+    coupon: str | None, score: int | None, category: str | None = None,
 ) -> None:
     get_client().table("deals").insert(
         {
@@ -98,6 +100,7 @@ def record_posted_deal(
             "price": price,
             "coupon": coupon,
             "score": score,
+            "category": category,
         }
     ).execute()
 
