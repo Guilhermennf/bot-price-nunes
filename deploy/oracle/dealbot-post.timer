@@ -1,0 +1,10 @@
+[Unit]
+Description=Run deal bot post every 15 minutes
+
+[Timer]
+OnCalendar=*:0/15
+Persistent=true
+RandomizedDelaySec=60
+
+[Install]
+WantedBy=timers.target

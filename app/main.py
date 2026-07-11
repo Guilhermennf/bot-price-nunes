@@ -75,8 +75,10 @@ def record_run_stats(started_at: str, counters: dict, sources: dict) -> None:
     db = _db()
     if not db:
         return
+    from app.notify.telegram import get_member_count
     try:
-        db.record_run(started_at, counters, sources)
+        db.record_run(started_at, counters, sources,
+                      subscribers=get_member_count())
     except Exception as exc:
         log.warning("record_run failed: %s", exc)
 
@@ -115,6 +117,37 @@ def enqueue(deal: Deal) -> None:
         log.warning("enqueue failed: %s", exc)
 
 
+def _quiet_channel_watchdog() -> None:
+    """Alert the admin when the channel has been silent too long.
+
+    Runs on every (15-min) post run; the modulo window fires the alert once
+    per multiple of `alert_quiet_hours` instead of spamming every run.
+    """
+    db = _db()
+    s = get_settings()
+    if not db or not s.admin_chat_id:
+        return
+    try:
+        last = db.last_posted_at()
+    except Exception as exc:
+        log.warning("watchdog check failed: %s", exc)
+        return
+    if last is None:
+        return
+    hours_since = (datetime.now(UTC) - last).total_seconds() / 3600
+    if hours_since < s.alert_quiet_hours:
+        return
+    # Fire only in a ~20-min window right after each threshold multiple.
+    if (hours_since % s.alert_quiet_hours) * 60 < 20:
+        from app.notify.telegram import send_admin
+        send_admin(
+            f"⚠️ <b>Canal mudo há {hours_since:.0f}h</b>\n"
+            f"Fila vazia e sem posts desde então — verificar coleta "
+            f"(fontes/validação) no GitHub Actions."
+        )
+        log.warning("quiet-channel alert sent (%.1fh without posts)", hours_since)
+
+
 def post_from_queue(limit: int = 1) -> None:
     """Drain up to `limit` pending deals from the queue to the channel."""
     db = _db()
@@ -130,6 +163,7 @@ def post_from_queue(limit: int = 1) -> None:
         return
     if not rows:
         log.info("queue empty; nothing to post")
+        _quiet_channel_watchdog()
         return
 
     for row in rows:

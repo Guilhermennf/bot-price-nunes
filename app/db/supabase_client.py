@@ -105,11 +105,25 @@ def record_posted_deal(
     ).execute()
 
 
-def record_run(started_at: str, counters: dict, sources: dict) -> None:
+def record_run(started_at: str, counters: dict, sources: dict,
+               subscribers: int | None = None) -> None:
     """Persist one pipeline-run summary row (dashboard health view)."""
-    get_client().table("runs").insert(
-        {"started_at": started_at, "sources": sources, **counters}
-    ).execute()
+    row = {"started_at": started_at, "sources": sources, **counters}
+    if subscribers is not None:
+        row["subscribers"] = subscribers
+    get_client().table("runs").insert(row).execute()
+
+
+def last_posted_at() -> datetime | None:
+    """Timestamp of the most recent channel post, or None if never."""
+    resp = (
+        get_client().table("deals").select("posted_at")
+        .order("posted_at", desc=True).limit(1).execute()
+    )
+    rows = cast(list[dict[str, Any]], resp.data or [])
+    if not rows:
+        return None
+    return datetime.fromisoformat(str(rows[0]["posted_at"]))
 
 
 # ------------------------------ post queue -----------------------------------

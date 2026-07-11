@@ -30,6 +30,16 @@ export type RunRow = {
   skipped_dupe: number;
   skipped_resolve: number;
   sources: Record<string, number> | null;
+  subscribers: number | null;
+};
+
+export type QueueRow = {
+  id: number;
+  short_title: string | null;
+  title: string;
+  store: string | null;
+  price: number | null;
+  created_at: string;
 };
 
 const daysAgo = (n: number) =>
@@ -116,6 +126,21 @@ export const pagedDeals = unstable_cache(
   },
   ["paged-deals"],
   { revalidate: REVALIDATE_SECONDS, tags: ["deals"] },
+);
+
+/** Deals approved but not yet posted (the drip queue). */
+export const pendingQueue = unstable_cache(
+  async (): Promise<QueueRow[]> => {
+    const { data, error } = await db()
+      .from("post_queue")
+      .select("id,short_title,title,store,price,created_at")
+      .is("posted_at", null)
+      .order("created_at");
+    if (error) return [];
+    return data ?? [];
+  },
+  ["pending-queue"],
+  { revalidate: REVALIDATE_SECONDS, tags: ["queue"] },
 );
 
 /** Distinct store names present in the deals table (for the filter select). */

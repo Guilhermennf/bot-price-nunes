@@ -49,6 +49,10 @@ create table if not exists runs (
 
 create index if not exists runs_started_idx on runs (started_at desc);
 
+-- Migration for pre-Phase-B databases (idempotent): channel subscriber
+-- count captured at collect time (growth curve on the dashboard).
+alter table runs add column if not exists subscribers int;
+
 -- Approved deals waiting to be posted — drained one at a time by the
 -- posting runs so the channel gets a steady drip instead of bursts.
 create table if not exists post_queue (

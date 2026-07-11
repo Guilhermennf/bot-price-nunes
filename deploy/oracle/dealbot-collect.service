@@ -1,0 +1,11 @@
+[Unit]
+Description=Deal bot - collect run (scrape -> validate -> AI -> queue)
+Wants=network-online.target
+After=network-online.target
+
+[Service]
+Type=oneshot
+User=__USER__
+WorkingDirectory=__APP_DIR__
+ExecStart=__APP_DIR__/.venv/bin/python -m app.main
+TimeoutStartSec=900

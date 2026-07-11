@@ -6,6 +6,7 @@ CLI smoke test:  python -m app.notify.telegram "test message"
 from __future__ import annotations
 
 import html
+import logging
 import sys
 
 import httpx
@@ -13,17 +14,21 @@ import httpx
 from app.config import get_settings
 from app.models import Deal
 
-_API = "https://api.telegram.org/bot{token}/sendMessage"
+log = logging.getLogger(__name__)
+
+_API = "https://api.telegram.org/bot{token}/{method}"
 
 
-def send_message(text: str, disable_preview: bool = False) -> dict:
+def send_message(text: str, disable_preview: bool = False,
+                 chat_id: str | None = None) -> dict:
     s = get_settings()
-    if not s.telegram_bot_token or not s.telegram_chat_id:
+    chat_id = chat_id or s.telegram_chat_id
+    if not s.telegram_bot_token or not chat_id:
         raise RuntimeError("TELEGRAM_BOT_TOKEN / TELEGRAM_CHAT_ID not configured")
     resp = httpx.post(
-        _API.format(token=s.telegram_bot_token),
+        _API.format(token=s.telegram_bot_token, method="sendMessage"),
         json={
-            "chat_id": s.telegram_chat_id,
+            "chat_id": chat_id,
             "text": text,
             "parse_mode": "HTML",
             "disable_web_page_preview": disable_preview,
@@ -32,6 +37,35 @@ def send_message(text: str, disable_preview: bool = False) -> dict:
     )
     resp.raise_for_status()
     return resp.json()
+
+
+def send_admin(text: str) -> None:
+    """Operational alert to the admin's private chat. Fail-soft, optional."""
+    s = get_settings()
+    if not s.admin_chat_id:
+        return
+    try:
+        send_message(text, disable_preview=True, chat_id=s.admin_chat_id)
+    except Exception as exc:
+        log.warning("admin alert failed: %s", exc)
+
+
+def get_member_count() -> int | None:
+    """Subscriber count of the channel (fail-soft)."""
+    s = get_settings()
+    if not s.telegram_bot_token or not s.telegram_chat_id:
+        return None
+    try:
+        resp = httpx.get(
+            _API.format(token=s.telegram_bot_token, method="getChatMemberCount"),
+            params={"chat_id": s.telegram_chat_id},
+            timeout=s.request_timeout,
+        )
+        resp.raise_for_status()
+        return int(resp.json()["result"])
+    except Exception as exc:
+        log.info("getChatMemberCount failed: %s", exc)
+        return None
 
 
 def _brl(value: float) -> str:

@@ -7,6 +7,7 @@ import StatTiles from "@/components/StatTiles";
 import {
   dealsSince,
   lastRuns,
+  pendingQueue,
   postsPerDay,
   recentDeals,
 } from "@/lib/queries";
@@ -35,10 +36,11 @@ function Section({
 }
 
 export default async function Page() {
-  const [deals14d, latest, runs] = await Promise.all([
+  const [deals14d, latest, runs, queue] = await Promise.all([
     dealsSince(14),
     recentDeals(20),
     lastRuns(12),
+    pendingQueue(),
   ]);
 
   const deals7d = deals14d.filter(
@@ -57,7 +59,19 @@ export default async function Page() {
       ? `${((lastRun.posted / lastRun.gathered) * 100).toFixed(0)}%`
       : "—";
 
+  const subscribers = runs.find((r) => r.subscribers != null)?.subscribers;
+
   const tiles = [
+    {
+      label: "Inscritos no canal",
+      value: subscribers != null ? String(subscribers) : "—",
+      hint: "@nunestechpromos",
+    },
+    {
+      label: "Na fila",
+      value: String(queue.length),
+      hint: "aguardando postagem",
+    },
     {
       label: "Ofertas (7 dias)",
       value: String(deals7d.length),
@@ -135,6 +149,24 @@ export default async function Page() {
           </div>
         </Section>
       </div>
+
+      {queue.length > 0 && (
+        <Section title={`Fila de postagem (${queue.length} pendente${queue.length > 1 ? "s" : ""})`}>
+          <ul className="divide-y" style={{ borderColor: "var(--viz-border)" }}>
+            {queue.map((q) => (
+              <li key={q.id} className="flex items-center justify-between px-4 py-2 text-sm">
+                <span className="truncate">{q.short_title || q.title}</span>
+                <span className="tnum ml-4 shrink-0" style={{ color: "var(--ink-2)" }}>
+                  {q.store} ·{" "}
+                  {q.price != null
+                    ? q.price.toLocaleString("pt-BR", { style: "currency", currency: "BRL" })
+                    : "—"}
+                </span>
+              </li>
+            ))}
+          </ul>
+        </Section>
+      )}
 
       <Section title="Últimas ofertas postadas">
         <DealsTable deals={latest} />

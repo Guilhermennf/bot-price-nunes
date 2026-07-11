@@ -25,6 +25,11 @@ class Settings(BaseSettings):
     # Telegram
     telegram_bot_token: str = ""
     telegram_chat_id: str = ""
+    # Private chat for operational alerts (your personal chat id, not the
+    # channel). Empty = alerts disabled.
+    admin_chat_id: str = ""
+    # Alert when the channel has had no posts for this many hours.
+    alert_quiet_hours: int = 8
 
     # Supabase
     supabase_url: str = ""
