@@ -32,6 +32,7 @@ from app.ai import gemini
 from app.config import get_settings
 from app.models import Deal
 from app.sources import amazon, gatry, mercadolivre, pechinchou, pelando, promobit
+from app.sources.base import get, meta_image
 from app.validation import checkout_sim
 from app.validation.price_history import validate
 
@@ -111,6 +112,7 @@ def enqueue(deal: Deal) -> None:
             "category": deal.category,
             "score": deal.score,
             "url": deal.url,
+            "image_url": deal.image_url,
         })
         log.info("queued: %s", deal.short_title or deal.title)
     except Exception as exc:
@@ -172,6 +174,7 @@ def post_from_queue(limit: int = 1) -> None:
                     price=float(row["price"]) if row.get("price") else None,
                     coupon=row.get("coupon"))
         deal.short_title = row.get("short_title")
+        deal.image_url = row.get("image_url")
         deal.discount_pct = (
             float(row["discount_pct"]) if row.get("discount_pct") else None
         )
@@ -221,6 +224,19 @@ def confirm_price(deal: Deal) -> None:
         if deal.price is not None and abs(live - deal.price) / max(live, 1) > 0.005:
             log.info("price corrected %.2f -> %.2f for %s", deal.price, live, deal.title)
         deal.price = live
+
+
+def fetch_image(url: str) -> str | None:
+    """Product photo (og:image) from the final store page. Fail-soft: a
+    missing/unreachable image never blocks a post, Telegram just falls back
+    to a text-only message."""
+    try:
+        resp = get(url)
+        resp.raise_for_status()
+    except Exception as exc:
+        log.info("image fetch failed (%s): %s", url[:60], exc)
+        return None
+    return meta_image(resp.text)
 
 
 def _priority(deal: Deal) -> float:
@@ -312,6 +328,7 @@ def run(dry_run: bool = False) -> None:
             log.info("skip (no direct store link): %s", deal.title)
             continue
         deal.url = direct
+        deal.image_url = fetch_image(deal.url)
 
         # Attach affiliate identity (no-op until env vars are configured).
         deal.url = affiliate.apply(deal.url, deal.store)
@@ -342,7 +359,8 @@ def _preview(deal: Deal) -> str:
         f"score:    {deal.score} — {deal.reason}\n"
         f"coupon:   {deal.coupon}\n"
         f"short:    {deal.short_title}\n"
-        f"url:      {deal.url}"
+        f"url:      {deal.url}\n"
+        f"image:    {deal.image_url}"
     )
 
 

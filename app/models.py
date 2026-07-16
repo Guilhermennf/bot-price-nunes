@@ -72,6 +72,7 @@ class Deal:
     short_title: str | None = None
     reason: str | None = None
     category: str | None = None  # from Gemini, e.g. "smartphone"
+    image_url: str | None = None  # product photo, fetched at posting time
 
     key: str = field(default="", init=False)
 
