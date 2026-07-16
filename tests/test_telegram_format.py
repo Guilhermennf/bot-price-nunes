@@ -1,5 +1,9 @@
+from app.config import get_settings
 from app.models import Deal
+from app.notify import telegram
 from app.notify.telegram import _format_deal, _short_title
+
+from tests.conftest import FakeResponse
 
 
 def make_deal(**kw):
@@ -89,3 +93,66 @@ def test_short_title_falls_back_to_truncated_raw_title():
 def test_short_title_html_escaped():
     msg = _format_deal(make_deal(short_title='TV 50" <Promo> & Cia'))
     assert "&lt;Promo&gt;" in msg and "&amp;" in msg
+
+
+# --- send_deal: photo when we have an image, plain text (preview off) otherwise ---
+
+def _mock_telegram(monkeypatch):
+    monkeypatch.setenv("TELEGRAM_BOT_TOKEN", "test-token")
+    monkeypatch.setenv("TELEGRAM_CHAT_ID", "test-chat")
+    get_settings.cache_clear()
+    calls = []
+
+    def fake_post(url, json=None, timeout=None):
+        calls.append((url, json))
+        return FakeResponse(json_data={"ok": True})
+
+    monkeypatch.setattr(telegram.httpx, "post", fake_post)
+    return calls
+
+
+def test_send_deal_uses_sendphoto_when_image_present(monkeypatch):
+    calls = _mock_telegram(monkeypatch)
+    deal = make_deal(image_url="https://example.com/product.jpg")
+
+    telegram.send_deal(deal)
+
+    assert len(calls) == 1
+    url, payload = calls[0]
+    assert url.endswith("/sendPhoto")
+    assert payload["photo"] == "https://example.com/product.jpg"
+    assert payload["caption"] == _format_deal(deal)
+
+
+def test_send_deal_falls_back_to_text_without_image(monkeypatch):
+    calls = _mock_telegram(monkeypatch)
+    deal = make_deal(image_url=None)
+
+    telegram.send_deal(deal)
+
+    assert len(calls) == 1
+    url, payload = calls[0]
+    assert url.endswith("/sendMessage")
+    assert payload["disable_web_page_preview"] is True
+    assert payload["text"] == _format_deal(deal)
+
+
+def test_send_deal_falls_back_when_sendphoto_fails(monkeypatch):
+    monkeypatch.setenv("TELEGRAM_BOT_TOKEN", "test-token")
+    monkeypatch.setenv("TELEGRAM_CHAT_ID", "test-chat")
+    get_settings.cache_clear()
+    calls = []
+
+    def fake_post(url, json=None, timeout=None):
+        if url.endswith("/sendPhoto"):
+            return FakeResponse(status=400)
+        calls.append((url, json))
+        return FakeResponse(json_data={"ok": True})
+
+    monkeypatch.setattr(telegram.httpx, "post", fake_post)
+    deal = make_deal(image_url="https://example.com/broken.jpg")
+
+    telegram.send_deal(deal)
+
+    assert len(calls) == 1
+    assert calls[0][0].endswith("/sendMessage")

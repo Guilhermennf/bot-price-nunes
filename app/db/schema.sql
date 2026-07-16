@@ -67,12 +67,17 @@ create table if not exists post_queue (
     category     text,
     score        int,
     url          text not null,
+    image_url    text,
     created_at   timestamptz not null default now(),
     posted_at    timestamptz
 );
 
 create index if not exists post_queue_pending_idx
     on post_queue (created_at) where posted_at is null;
+
+-- Migration for pre-image-post databases (idempotent): product photo,
+-- fetched at posting time and sent via Telegram sendPhoto.
+alter table post_queue add column if not exists image_url text;
 
 -- ---------------------------------------------------------------------------
 -- Row Level Security: the dashboard reads with the public anon key, so lock

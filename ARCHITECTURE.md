@@ -153,8 +153,13 @@ então parâmetros de afiliado nunca contaminam a identidade do produto.
 
 ## Camada 8 — Publicação (Telegram) e Dashboard (Next.js/Vercel)
 
-**Telegram:** POST direto na Bot API (`sendMessage`, HTML) — um framework de
-bot seria peso morto para mão única. Preview de link ligado = foto do produto.
+**Telegram:** POST direto na Bot API (HTML) — um framework de bot seria peso
+morto para mão única. A foto do produto (`og:image` da página final da loja,
+buscada em `fetch_image()` no momento da publicação) vai via `sendPhoto`, com
+título/preço/cupom/loja/link como legenda — em vez de depender do preview
+automático de link do Telegram, que puxa título/descrição da própria loja e
+podia inflar a mensagem. Sem imagem (ou se o `sendPhoto` falhar), cai para
+`sendMessage` com preview desligado.
 
 **Dashboard:** Next.js App Router na Vercel, ISR de 2 min. Server Components
 buscam do Supabase **no servidor** (a service key nunca chega ao browser).
