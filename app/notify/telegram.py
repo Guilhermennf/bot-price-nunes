@@ -39,6 +39,25 @@ def send_message(text: str, disable_preview: bool = False,
     return resp.json()
 
 
+def send_photo(photo_url: str, caption: str, chat_id: str | None = None) -> dict:
+    s = get_settings()
+    chat_id = chat_id or s.telegram_chat_id
+    if not s.telegram_bot_token or not chat_id:
+        raise RuntimeError("TELEGRAM_BOT_TOKEN / TELEGRAM_CHAT_ID not configured")
+    resp = httpx.post(
+        _API.format(token=s.telegram_bot_token, method="sendPhoto"),
+        json={
+            "chat_id": chat_id,
+            "photo": photo_url,
+            "caption": caption,
+            "parse_mode": "HTML",
+        },
+        timeout=s.request_timeout,
+    )
+    resp.raise_for_status()
+    return resp.json()
+
+
 def send_admin(text: str) -> None:
     """Operational alert to the admin's private chat. Fail-soft, optional."""
     s = get_settings()
@@ -119,8 +138,20 @@ def _format_deal(deal: Deal, link: str | None = None) -> str:
 
 
 def send_deal(deal: Deal) -> dict:
-    """Post a formatted deal (link preview ON so the product image shows)."""
-    return send_message(_format_deal(deal), disable_preview=False)
+    """Post a formatted deal as a photo (image + caption) when we have a
+    product photo, so the channel shows a clean card instead of Telegram's
+    auto-generated link-preview (which pulls the store page's own title/
+    description and can balloon the message). Falls back to a plain text
+    message — link preview off, so no oversized card — when there's no
+    image or the photo send fails."""
+    caption = _format_deal(deal)
+    if deal.image_url:
+        try:
+            return send_photo(deal.image_url, caption)
+        except Exception as exc:
+            log.warning("sendPhoto failed (%s); falling back to text: %s",
+                        deal.image_url, exc)
+    return send_message(caption, disable_preview=True)
 
 
 if __name__ == "__main__":

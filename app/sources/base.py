@@ -130,3 +130,21 @@ def meta_price(html: str) -> float | None:
                 except ValueError:
                     continue
     return None
+
+
+def meta_image(html: str) -> str | None:
+    """Product photo from og:image / twitter:image meta tags.
+
+    Store-agnostic (every product page sets one of these), so this is used
+    against the final resolved store URL rather than per-aggregator thumbnail
+    fields, which vary in shape/host and aren't reliably resolvable.
+    """
+    tree = HTMLParser(html)
+    for sel in ('meta[property="og:image:secure_url"]', 'meta[property="og:image"]',
+                'meta[name="twitter:image"]'):
+        node = tree.css_first(sel)
+        if node:
+            content = node.attributes.get("content")
+            if content and content.strip():
+                return content.strip()
+    return None

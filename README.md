@@ -18,7 +18,7 @@ GitHub Actions cron
                  + checkout-sim stub (flagged off)
   → 3. AI        Gemini Flash: legit? score + PT-BR copy
   → 4. DB        Supabase: dedupe + price history
-  → 5. Notify    Telegram sendMessage → private chat
+  → 5. Notify    Telegram sendPhoto (+ text fallback) → private chat
 ```
 
 ## Stack (all free tier)

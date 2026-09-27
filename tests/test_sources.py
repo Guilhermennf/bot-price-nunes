@@ -1,6 +1,7 @@
 """Parsers against recorded real-site fixtures (offline)."""
 
 from app.sources import gatry, pechinchou, pelando, promobit
+from app.sources.base import meta_image
 
 from tests.conftest import FakeResponse
 
@@ -99,3 +100,22 @@ def test_pechinchou_shape_change_is_soft(monkeypatch):
         ),
     )
     assert pechinchou.fetch() == []
+
+
+def test_meta_image_prefers_og_image():
+    html = (
+        '<html><head>'
+        '<meta property="og:image" content="https://store.com/p.jpg">'
+        '<meta name="twitter:image" content="https://store.com/twitter.jpg">'
+        '</head></html>'
+    )
+    assert meta_image(html) == "https://store.com/p.jpg"
+
+
+def test_meta_image_falls_back_to_twitter_image():
+    html = '<html><head><meta name="twitter:image" content="https://store.com/t.jpg"></head></html>'
+    assert meta_image(html) == "https://store.com/t.jpg"
+
+
+def test_meta_image_none_when_absent():
+    assert meta_image("<html><head></head></html>") is None
