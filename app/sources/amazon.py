@@ -9,7 +9,7 @@ from __future__ import annotations
 
 import logging
 
-from selectolax.parser import HTMLParser
+from selectolax.lexbor import LexborHTMLParser
 
 from app.config import get_settings
 from app.sources.base import get, jsonld_price, parse_brl
@@ -29,7 +29,7 @@ _PRICE_SELECTORS = (
 
 
 def _from_html(html: str) -> float | None:
-    tree = HTMLParser(html)
+    tree = LexborHTMLParser(html)
     for sel in _PRICE_SELECTORS:
         node = tree.css_first(sel)
         if node and node.text().strip():

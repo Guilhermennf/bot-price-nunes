@@ -11,7 +11,7 @@ from __future__ import annotations
 
 import logging
 
-from selectolax.parser import HTMLParser
+from selectolax.lexbor import LexborHTMLParser
 
 from app.models import Deal
 from app.sources.base import Source, get, parse_brl
@@ -65,7 +65,7 @@ class Gatry:
             log.warning("gatry fetch failed: %s", exc)
             return []
 
-        tree = HTMLParser(resp.text)
+        tree = LexborHTMLParser(resp.text)
         deals: dict[str, Deal] = {}
         for article in tree.css("article"):
             deal = _to_deal(article)
