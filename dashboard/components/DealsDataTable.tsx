@@ -1,11 +1,11 @@
 "use client";
 
+import { flexRender } from "@tanstack/react-table";
 import {
-  flexRender,
   getCoreRowModel,
-  useReactTable,
-  type ColumnDef,
-} from "@tanstack/react-table";
+  useLegacyTable,
+  type LegacyColumnDef,
+} from "@tanstack/react-table/legacy";
 import { useRouter, useSearchParams } from "next/navigation";
 import { useCallback } from "react";
 import type { DealRow } from "@/lib/queries";
@@ -25,7 +25,7 @@ const brl = (v: number | null) =>
     ? "—"
     : v.toLocaleString("pt-BR", { style: "currency", currency: "BRL" });
 
-const columns: ColumnDef<DealRow>[] = [
+const columns: LegacyColumnDef<DealRow>[] = [
   {
     accessorKey: "title",
     header: "Produto",
@@ -106,7 +106,7 @@ export default function DealsDataTable({
     [router, searchParams],
   );
 
-  const table = useReactTable({
+  const table = useLegacyTable({
     data: rows,
     columns,
     getCoreRowModel: getCoreRowModel(),
