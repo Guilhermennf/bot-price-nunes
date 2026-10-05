@@ -9,7 +9,7 @@ from __future__ import annotations
 
 import logging
 
-from selectolax.parser import HTMLParser
+from selectolax.lexbor import LexborHTMLParser
 
 from app.config import get_settings
 from app.sources.base import get, jsonld_price, meta_price, parse_brl
@@ -25,7 +25,7 @@ def _from_html(html: str) -> float | None:
         return price
     # ML renders the current price in <meta itemprop="price"> usually, but as a
     # last resort read the andes-money-amount fraction/cents nodes.
-    tree = HTMLParser(html)
+    tree = LexborHTMLParser(html)
     frac = tree.css_first(".andes-money-amount__fraction")
     if frac:
         cents_node = tree.css_first(".andes-money-amount__cents")

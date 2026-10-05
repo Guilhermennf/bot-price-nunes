@@ -8,7 +8,7 @@ from collections.abc import Iterator
 from typing import Any, Protocol
 
 import httpx
-from selectolax.parser import HTMLParser
+from selectolax.lexbor import LexborHTMLParser
 
 from app.config import get_settings
 from app.models import Deal
@@ -41,7 +41,7 @@ def parse_next_data(html: str) -> dict | None:
 
     Far more stable than CSS selectors when it's present.
     """
-    tree = HTMLParser(html)
+    tree = LexborHTMLParser(html)
     node = tree.css_first("script#__NEXT_DATA__")
     if not node:
         return None
@@ -98,7 +98,7 @@ def jsonld_price(html: str) -> float | None:
     JSON-LD uses a dot-decimal 'price' (e.g. "1299.90"), so parse as float
     directly rather than via the BRL parser.
     """
-    tree = HTMLParser(html)
+    tree = LexborHTMLParser(html)
     for node in tree.css('script[type="application/ld+json"]'):
         try:
             data = json.loads(node.text())
@@ -118,7 +118,7 @@ def jsonld_price(html: str) -> float | None:
 
 def meta_price(html: str) -> float | None:
     """Fallback: itemprop / og:price meta tags (dot-decimal)."""
-    tree = HTMLParser(html)
+    tree = LexborHTMLParser(html)
     for sel in ('meta[itemprop="price"]', 'meta[property="product:price:amount"]',
                 'meta[property="og:price:amount"]'):
         node = tree.css_first(sel)
@@ -139,7 +139,7 @@ def meta_image(html: str) -> str | None:
     against the final resolved store URL rather than per-aggregator thumbnail
     fields, which vary in shape/host and aren't reliably resolvable.
     """
-    tree = HTMLParser(html)
+    tree = LexborHTMLParser(html)
     for sel in ('meta[property="og:image:secure_url"]', 'meta[property="og:image"]',
                 'meta[name="twitter:image"]'):
         node = tree.css_first(sel)
